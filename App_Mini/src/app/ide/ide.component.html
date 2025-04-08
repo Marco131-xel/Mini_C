@@ -1,0 +1,58 @@
+<h1>Mini C</h1>
+
+<div class="main-container">
+    <!-- Columna izquierda-->
+    <div class="left-container">
+        <!-- Botones de inicio-->
+        <div class="file-buttons">
+            <input type="file" (change)="onFileChange($event)" accept=".cmm">
+            <div class="cursor-info">
+                Linea: {{currentLine}}  Columna: {{currentColumn}}
+            </div>
+            <div class="save-buttons">
+                <button (click)="saveCode()">Guardar</button>
+                <button (click)="saveCodeAs()">Guardar como</button>
+            </div>
+        </div>
+        <!-- Mi editor-->
+        <div class="editor-container">
+            <div #lineCounter class="line-counter"></div>
+            <textarea #codeEditor [(ngModel)]="codeContent" (input)="updateLineCounter()" (click)="updateCursorPosition()" 
+            (keydown)="updateCursorPosition()" (keyup)="updateCursorPosition()" spellcheck="false"></textarea>
+        </div>
+        <!-- Botones de compilacion -->
+        <div class="compile-buttons">
+            <button (click)="compileCode()">Compilar</button>
+            <button id="lista" (click)="listCaptchas()">Lista Captchas</button>
+        </div>
+    </div>
+
+    <!-- Columna de derecha-->
+    <div class="right-container">
+        <!-- Tabla de Errores -->
+        <h4>Tabla Errores</h4>
+        <table border="1" id="errorTable">
+            <thead>
+                <tr>
+                    <th>Tipo</th>
+                    <th>Descripción</th>
+                    <th>Linea</th>
+                    <th>Columna</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let error of errores">
+                    <td>{{error.tipo}}</td>
+                    <td>{{error.desc}}</td>
+                    <td>{{error.linea}}</td>
+                    <td>{{error.columna}}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div *ngIf="respuesta">
+            <h3>Respuesta: </h3>
+            <pre>{{ respuesta }}</pre>
+        </div>
+    </div>
+</div>
