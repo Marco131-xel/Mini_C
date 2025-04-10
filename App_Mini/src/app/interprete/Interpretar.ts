@@ -3,7 +3,7 @@ import Arbol from "./ast/Arbol"
 import TablaSimbolos from "./ast/TablaSimbolos"
 import Contador from "./ast/Contador"
 import Errores from "./excepciones/Errores"
-const parser = require("./analizador/parser");
+import * as parser from "./analizador/parser.js"
 
 var AstDot: string
 
@@ -13,13 +13,12 @@ export class Interpretar {
         let salida = "";
         try {
             AstDot = ""
-            const contenido = parser.parse(entrada);
-            console.log("RESULTADO: ", contenido)
-            let ast = new Arbol(contenido)
+            let ast = new Arbol(parser.parse(entrada))
             let tabla = new TablaSimbolos()
-            tabla.setNombre("Ejemplo1")
+            tabla.setNombre("Global")
             ast.setTablaGlobal(tabla)
             ast.setConsola("")
+
             for (let i of ast.getInstrucciones()) {
                 console.log(i)
                 var resultado = i.interpretar(ast, tabla)
