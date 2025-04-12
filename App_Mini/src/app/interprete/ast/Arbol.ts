@@ -46,4 +46,12 @@ export default class Arbol {
     public getErrores(): any {
         return this.errores
     }
+
+    public setErrores(errores: Array<Errores>): void {
+        this.errores = errores;
+    }
+
+    public addError(error: Errores): void {
+        this.errores.push(error);
+    }
 }

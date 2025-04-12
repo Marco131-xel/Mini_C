@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Errores } from '../errores';
+import  Errores from '../interprete/excepciones/Errores';
 import { Router } from '@angular/router';
 import { InterpreteService } from '../interprete/interprete.service';
 
@@ -22,6 +22,14 @@ export class IdeComponent {
   errores: Errores[] = [];
   currentLine: number = 1; 
   currentColumn: number = 1; 
+
+  showingTerminal: boolean = true;
+  terminalOutput: string = '';
+  currentTab:string = "salida"
+  archivos = [
+    { nombre: 'main.cmm' },
+    { nombre: 'utils.cmm' },
+  ];
 
   constructor(private cdr: ChangeDetectorRef, private router: Router, private interpreteService: InterpreteService) {}
 
@@ -120,21 +128,69 @@ export class IdeComponent {
   compileCode() {
     if (this.codeContent.trim()) {
       try {
-        this.respuesta = this.interpreteService.ejecutarCodigo(this.codeContent);
-        this.errores = [];
-        console.log("Salida del Interprete: ", this.respuesta);
+        const resultado = this.interpreteService.ejecutarCodigo(this.codeContent);
+        this.terminalOutput = resultado.salida;
+        this.errores = resultado.errores;
+  
+        console.log("Salida:", resultado.salida);
+        console.log("Errores:", resultado.errores);
+  
+        // Asegurarse de que la terminal esté visible
+        this.showingTerminal = true;
+  
+        // Elegir la pestaña según si hay errores o no
+        if (this.errores && this.errores.length > 0) {
+          this.showTab('errores');
+        } else {
+          this.terminalOutput = "run:\n" + resultado.salida;
+          this.showTab('salida');
+        }
       } catch (e) {
-          this.respuesta = "Error al ejecutar el codigo";
-          console.error(e);
-      } 
+        this.terminalOutput = "Error al ejecutar el código";
+        this.showingTerminal = true;
+        this.showTab('salida');
+        console.error(e);
+      }
     } else {
-      this.respuesta = "No hay codigo para ejecutar";
-      console.error(this.respuesta);
+      this.terminalOutput = "No hay código para ejecutar";
+      this.showingTerminal = true;
+      this.showTab('salida');
     }
   }
-
+  
   listCaptchas() {
     console.log('Mostrar lista de captchas');
     this.router.navigate(['/lista-captchas']);
+  }
+
+  toggleTerminal() {
+    this.showingTerminal = !this.showingTerminal;
+  }
+  
+  createFile() {
+    this.codeContent = '';
+    this.terminalOutput = 'Nuevo archivo creado.';
+  }
+  
+  showYaml() {
+    this.terminalOutput = 'Mostrando YAML...';
+  }
+  
+  showReports() {
+    this.terminalOutput = 'Mostrando reportes...';
+  }
+  
+  showHelp() {
+    this.terminalOutput = 'Ayuda del sistema...';
+  }
+
+  showTab(tab: string) {
+    this.currentTab = tab;
+  }
+
+  abrirArchivo(archivo: any) {
+    // Lógica para abrir archivo
+    this.codeContent = '// contenido de ' + archivo.nombre;
+    this.terminalOutput = `Archivo ${archivo.nombre} abierto.`;
   }
 }

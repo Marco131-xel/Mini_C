@@ -1,58 +1,74 @@
-<h1>Mini C</h1>
+<!-- ENCABEZADO SUPERIOR -->
+<div class="top-bar">
+  <h2>Mini C</h2>
+  <button (click)="createFile()">Crear</button>
+  <button (click)="saveCode()">Guardar</button>
+  <button (click)="toggleTerminal()">Terminal</button>
+  <button (click)="showYaml()">Yaml</button>
+  <button (click)="showReports()">Reportes</button>
+  <button (click)="showHelp()">Ayuda</button>
+  <button (click)="compileCode()">Compilar</button>
+</div>
 
-<div class="main-container">
-    <!-- Columna izquierda-->
-    <div class="left-container">
-        <!-- Botones de inicio-->
-        <div class="file-buttons">
-            <input type="file" (change)="onFileChange($event)" accept=".cmm">
-            <div class="cursor-info">
-                Linea: {{currentLine}}  Columna: {{currentColumn}}
-            </div>
-            <div class="save-buttons">
-                <button (click)="saveCode()">Guardar</button>
-                <button (click)="saveCodeAs()">Guardar como</button>
-            </div>
-        </div>
-        <!-- Mi editor-->
-        <div class="editor-container">
-            <div #lineCounter class="line-counter"></div>
-            <textarea #codeEditor [(ngModel)]="codeContent" (input)="updateLineCounter()" (click)="updateCursorPosition()" 
-            (keydown)="updateCursorPosition()" (keyup)="updateCursorPosition()" spellcheck="false"></textarea>
-        </div>
-        <!-- Botones de compilacion -->
-        <div class="compile-buttons">
-            <button (click)="compileCode()">Compilar</button>
-            <button id="lista" (click)="listCaptchas()">Lista Captchas</button>
-        </div>
+<!-- CONTENEDOR PRINCIPAL -->
+<div class="main-wrapper">
+  <div class="left-panel">
+    <div class="file-bar">
+      <h3>Archivos</h3>
+      <div class="file-buttons">
+        <button>Crear</button>
+        <button>Eliminar</button>
+      </div>
+    </div>
+    <ul>
+      <li *ngFor="let archivo of archivos" (click)="abrirArchivo(archivo)">
+        {{ archivo.nombre }}
+      </li>
+    </ul>
+  </div>
+  <div class="container">
+    <!-- EDITOR -->
+    <div class="editor-container">
+      <div #lineCounter class="line-counter"></div>
+      <textarea #codeEditor [(ngModel)]="codeContent" (input)="updateLineCounter()"
+        (click)="updateCursorPosition()" (keydown)="updateCursorPosition()" (keyup)="updateCursorPosition()"
+        spellcheck="false">
+      </textarea>
     </div>
 
-    <!-- Columna de derecha-->
-    <div class="right-container">
-        <!-- Tabla de Errores -->
-        <h4>Tabla Errores</h4>
-        <table border="1" id="errorTable">
-            <thead>
-                <tr>
-                    <th>Tipo</th>
-                    <th>Descripción</th>
-                    <th>Linea</th>
-                    <th>Columna</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let error of errores">
-                    <td>{{error.tipo}}</td>
-                    <td>{{error.desc}}</td>
-                    <td>{{error.linea}}</td>
-                    <td>{{error.columna}}</td>
-                </tr>
-            </tbody>
-        </table>
+    <!-- TERMINAL -->
+    <div class="terminal-container" *ngIf="showingTerminal">
+      <div class="terminal-output">
+        <!-- Barra de opciones -->
+         <div class="terminal-tabs">
+          <button (click)="showTab('salida')">Salida</button>
+          <button (click)="showTab('tablaSimbolos')">Tabla Simbolos</button>
+          <button (click)="showTab('errores')">Tabla Errores</button>
+         </div>
+        <!-- Aquí pones tu salida de terminal -->
+         <!-- Contenido: salida -->
+    <pre *ngIf="currentTab === 'salida'">{{ terminalOutput }}</pre>
 
-        <div *ngIf="respuesta">
-            <h3>Respuesta: </h3>
-            <pre>{{ respuesta }}</pre>
-        </div>
+    <!-- Contenido: tabla de errores -->
+    <table *ngIf="currentTab === 'errores'" class="tabla-errores">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Descripción</th>
+          <th>Línea</th>
+          <th>Columna</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let error of errores">
+          <td>{{ error.tipo }}</td>
+          <td>{{ error.descripcion }}</td>
+          <td>{{ error.fila }}</td>
+          <td>{{ error.columna }}</td>
+        </tr>
+      </tbody>
+    </table>
+      </div>
     </div>
+  </div>
 </div>

@@ -9,8 +9,10 @@ var AstDot: string
 
 export class Interpretar {
     
-    public ejecutar(entrada: string): string {
+    public ejecutar(entrada: string): { salida: string, errores: Errores[] } {
         let salida = "";
+        let errores: Errores[] = [];
+
         try {
             AstDot = ""
             let ast = new Arbol(parser.parse(entrada))
@@ -23,6 +25,9 @@ export class Interpretar {
                 console.log(i)
                 var resultado = i.interpretar(ast, tabla)
                 console.log(resultado)
+                if (resultado instanceof Errores) {
+                    ast.addError(resultado)
+                }
             }
 
             for (let i of ast.getInstrucciones()) {
@@ -30,12 +35,13 @@ export class Interpretar {
                     continue
                 }
             }
+            errores = ast.getErrores()
             salida = ast.getConsola()
         } catch (err: any) {
             console.log(err)
             salida = "Error: " + err.message
         }
-        return salida
+        return {salida, errores}
     }
 
     public ast(req: Request, res: Response) {
