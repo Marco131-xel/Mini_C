@@ -231,3 +231,14 @@ textarea:focus {
 .tabla-errores tr:hover {
   background-color: #292929;
 }
+
+.cursor-info {
+  color: #2e86c1;
+  margin-top: 5px;
+  align-self: flex-start;
+  display: flex;
+  justify-content: flex-start; 
+  padding: 5px; 
+  background-color: #2d2d2d; 
+  border-radius: 4px;
+}

@@ -134,15 +134,12 @@ export class IdeComponent {
   
         console.log("Salida:", resultado.salida);
         console.log("Errores:", resultado.errores);
-  
-        // Asegurarse de que la terminal esté visible
+
         this.showingTerminal = true;
-  
-        // Elegir la pestaña según si hay errores o no
+
         if (this.errores && this.errores.length > 0) {
           this.showTab('errores');
         } else {
-          this.terminalOutput = "run:\n" + resultado.salida;
           this.showTab('salida');
         }
       } catch (e) {

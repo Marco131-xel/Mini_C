@@ -3,6 +3,7 @@ import Arbol from "./ast/Arbol"
 import TablaSimbolos from "./ast/TablaSimbolos"
 import Contador from "./ast/Contador"
 import Errores from "./excepciones/Errores"
+import { SintaxError } from './excepciones/SintaxError'
 import * as parser from "./analizador/parser.js"
 
 var AstDot: string
@@ -12,7 +13,8 @@ export class Interpretar {
     public ejecutar(entrada: string): { salida: string, errores: Errores[] } {
         let salida = "";
         let errores: Errores[] = [];
-
+        const lexicos = SintaxError.erroresLexicos(entrada)
+        const sintacticos = SintaxError.erroresSintacticos(entrada)
         try {
             AstDot = ""
             let ast = new Arbol(parser.parse(entrada))
@@ -40,6 +42,9 @@ export class Interpretar {
         } catch (err: any) {
             console.log(err)
             salida = "Error: " + err.message
+            if (lexicos.length > 0 || sintacticos.length > 0) {
+                errores = [...lexicos, ...sintacticos]
+            }
         }
         return {salida, errores}
     }

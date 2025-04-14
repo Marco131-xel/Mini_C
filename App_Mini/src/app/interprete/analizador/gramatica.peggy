@@ -8,6 +8,7 @@
   const Booleanas = require('../operadores/Booleanas.ts')
   const Relacionales = require('../operadores/Relacionales.ts')
   const Print = require('../sentencias/Print.ts')
+  const Declaracion = require('../sentencias/Declaracion.ts')
 }
 
 inicio = instrs:instrucciones EOF { return instrs; }
@@ -17,9 +18,13 @@ instrucciones = inst:instruccion insts:(_ instruccion)* { return [inst, ...insts
 ;
 
 instruccion = imprimir:print ";" { return imprimir; }
+            / declarar:declaracion ";" { return declarar; }
 ;
 
 print = "print" "("expr:expresion")" { return new Print.default(expr, location().start.line, location().start.column); }
+;
+
+declaracion = tip:tipos _ id:IDENTIFICADOR _ "=" _ expr:expresion { return new Declaracion.default(tip, location().start.line, location().start.column, id, expr) }
 ;
 
 expresion = or
@@ -76,6 +81,14 @@ termino = cadena:STRING { return new Nativo.default(new Tipo.default(Tipo.TipoDa
         / "(" expr:expresion ")" { return expr; }
 ;
 
+tipos = "int" { return new Tipo.default(Tipo.TipoDato.INT) }
+      / "float" { return new Tipo.default(Tipo.TipoDato.FLOAT) }
+      / "string" { return new Tipo.default(Tipo.TipoDato.STRING) }
+      / "char" { return new Tipo.default(Tipo.TipoDato.CHAR) }
+      / "bool" { return new Tipo.default(Tipo.TipoDato.BOOL) }
+      / "void" { return new Tipo.default(Tipo.TipoDato.VOID) }
+      / "struct" { return new Tipo.default(Tipo.TipoDato.STRUCT) }
+;
   /* LEXICO */
 FLOAT = digits:[0-9]+ "." decimals:[0-9]+ { return parseFloat(digits.join("") + "." + decimals.join("")); }
 ;
