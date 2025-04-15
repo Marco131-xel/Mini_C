@@ -5,6 +5,12 @@ import  Errores from '../interprete/excepciones/Errores';
 import { Router } from '@angular/router';
 import { InterpreteService } from '../interprete/interprete.service';
 
+declare global {
+  interface Window {
+    showDirectoryPicker: () => Promise<any>;
+  }
+}
+
 @Component({
   selector: 'app-ide',
   standalone: true,
@@ -164,9 +170,40 @@ export class IdeComponent {
     this.showingTerminal = !this.showingTerminal;
   }
   
-  createFile() {
-    this.codeContent = '';
-    this.terminalOutput = 'Nuevo archivo creado.';
+  async createFile() {
+    const nombre = prompt('Agregar Nombre al proyecto')
+    if (!nombre) {
+      this.terminalOutput = 'Creacion cancelada'
+      return
+    }
+
+    try {
+      const handle = await window.showDirectoryPicker();
+
+    // Crea carpeta del proyecto
+    const projectDir = await handle.getDirectoryHandle(nombre, { create: true });
+
+    // Crear config.yml
+    const configFile = await projectDir.getFileHandle('config.yml', { create: true });
+    const configWritable = await configFile.createWritable();
+    await configWritable.write('# Configuración del proyecto\n');
+    await configWritable.close();
+
+    // Crear carpeta src
+    const srcDir = await projectDir.getDirectoryHandle('src', { create: true });
+
+    // Crear main.cmm dentro de src
+    const mainFile = await srcDir.getFileHandle('main.cmm', { create: true });
+    const mainWritable = await mainFile.createWritable();
+    await mainWritable.write('// Código principal aquí\n');
+    await mainWritable.close();
+
+    this.terminalOutput = `Proyecto "${nombre}" creado con éxito.`;
+    this.codeContent = '// Código principal aquí\n';
+    } catch (err) {
+      console.log(err)
+      this.terminalOutput = 'Error al crear proyecto'
+    }
   }
   
   showYaml() {

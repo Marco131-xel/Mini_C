@@ -9,6 +9,7 @@
   const Relacionales = require('../operadores/Relacionales.ts')
   const Print = require('../sentencias/Print.ts')
   const Declaracion = require('../sentencias/Declaracion.ts')
+  const Asignacion = require('../sentencias/Asignacion.ts')
 }
 
 inicio = instrs:instrucciones EOF { return instrs; }
@@ -19,6 +20,7 @@ instrucciones = inst:instruccion insts:(_ instruccion)* { return [inst, ...insts
 
 instruccion = imprimir:print ";" { return imprimir; }
             / declarar:declaracion ";" { return declarar; }
+            / asignar:asignacion ";" { return asignar; }
 ;
 
 print = "print" "("expr:expresion")" { return new Print.default(expr, location().start.line, location().start.column); }
@@ -27,6 +29,10 @@ print = "print" "("expr:expresion")" { return new Print.default(expr, location()
 declaracion = tip:tipos _ id:IDENTIFICADOR _ "=" _ expr:expresion { return new Declaracion.default(tip, location().start.line, location().start.column, id, expr) }
 ;
 
+asignacion = id:IDENTIFICADOR _ "=" _ expr:expresion { return new Asignacion.default(id, location().start.line, location().start.column, expr) }
+;
+
+/* PRODUCCION PARA EXPRESION */
 expresion = or
 ;
 
