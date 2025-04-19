@@ -10,6 +10,11 @@
   const Print = require('../sentencias/Print.ts')
   const Declaracion = require('../sentencias/Declaracion.ts')
   const Asignacion = require('../sentencias/Asignacion.ts')
+  const Incremento = require('../sentencias/Incremento.ts')
+  const Decremento = require('../sentencias/Decremento.ts')
+  const Break = require('../sentencias/Break.ts')
+  const Return = require('../sentencias/Return.ts')
+  const If = require('../sentencias/If.ts')
 }
 
 inicio = instrs:instrucciones EOF { return instrs; }
@@ -20,7 +25,10 @@ instrucciones = inst:instruccion insts:(_ instruccion)* { return [inst, ...insts
 
 instruccion = imprimir:print ";" { return imprimir; }
             / declarar:declaracion ";" { return declarar; }
-            / asignar:asignacion ";" { return asignar; }
+            / asignar:asignacion { return asignar; }
+            / retu:return ";" { return retu; }
+            / bre:break ";" { return bre; }
+            / si:sif { return si; }
 ;
 
 print = "print" "("expr:expresion")" { return new Print.default(expr, location().start.line, location().start.column); }
@@ -29,7 +37,20 @@ print = "print" "("expr:expresion")" { return new Print.default(expr, location()
 declaracion = tip:tipos _ id:IDENTIFICADOR _ "=" _ expr:expresion { return new Declaracion.default(tip, location().start.line, location().start.column, id, expr) }
 ;
 
-asignacion = id:IDENTIFICADOR _ "=" _ expr:expresion { return new Asignacion.default(id, location().start.line, location().start.column, expr) }
+asignacion = id:IDENTIFICADOR _ "=" _ expr:expresion _ ";" { return new Asignacion.default(id, location().start.line, location().start.column, expr) }
+           / id:IDENTIFICADOR _ "++" { return new Incremento.default(id, location().start.line, location().start.column) } 
+           / id:IDENTIFICADOR _ "--" { return new Decremento.default(id, location().start.line, location().start.column) }
+;
+
+return = "return" _ expr:expresion { return new Return.default(expr, location().start.line, location().start.column) }
+;
+
+break = "break" _ { return new Break.default(location().start.line, location().start.column) }
+;
+
+sif = "if" _ "(" _ expr:expresion _ ")" _ "{" _ inst:instrucciones _ "}" _ "else" _ "{" _ insts:instrucciones _ "}" { return new If.default(expr, inst, null, insts, location().start.line, location().start.column) }
+    / "if" _ "(" _ expr:expresion _ ")" _ "{" _ inst:instrucciones _ "}" _ "else" _ si:sif { return new If.default(expr, inst, si, null, location().start.line, location().start.column) }
+    / "if" _ "(" _ expr:expresion _ ")" _ "{" _ inst:instrucciones _ "}" { return new If.default(expr, inst, null, null, location().start.line, location().start.column) }
 ;
 
 /* PRODUCCION PARA EXPRESION */

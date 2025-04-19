@@ -50,10 +50,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.INT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.INT)
                         return parseInt(op1) == parseInt(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) == parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "EQUALS Invalido", this.linea, this.columna)
@@ -61,10 +59,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.FLOAT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) == parseFloat(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) == parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "EQUALS Invalido", this.linea, this.columna)
@@ -72,7 +68,6 @@ export default class Relacionales extends Instruccion {
             case TipoDato.STRING:
                 switch (tipo2) {
                     case TipoDato.STRING:
-                        this.tipoDato = new Tipo(TipoDato.STRING)
                         return op1.toString().toLowerCase() === op2.toString().toLowerCase();
                     default:
                         return new Errores("SEMANTICO", "EQUALS Invalido", this.linea, this.columna)
@@ -91,10 +86,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.INT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.INT)
                         return parseInt(op1) != parseInt(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) != parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "NOTEQUALS Invalido", this.linea, this.columna)
@@ -102,10 +95,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.FLOAT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) != parseFloat(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) != parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "NOTEQUALS Invalido", this.linea, this.columna)
@@ -113,7 +104,6 @@ export default class Relacionales extends Instruccion {
             case TipoDato.STRING:
                 switch (tipo2) {
                     case TipoDato.STRING:
-                        this.tipoDato = new Tipo(TipoDato.STRING)
                         return op1.toString().toLowerCase() === op2.toString().toLowerCase();
                     default:
                         return new Errores("SEMANTICO", "NOTEQUALS Invalido", this.linea, this.columna)
@@ -132,10 +122,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.INT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.INT)
                         return parseInt(op1) <= parseInt(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) <= parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "MENOR IGUAL Invalido", this.linea, this.columna)
@@ -143,10 +131,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.FLOAT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) <= parseFloat(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) <= parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "MENOR IGUAL Invalido", this.linea, this.columna)
@@ -154,7 +140,6 @@ export default class Relacionales extends Instruccion {
             case TipoDato.STRING:
                 switch (tipo2) {
                     case TipoDato.STRING:
-                        this.tipoDato = new Tipo(TipoDato.STRING)
                         return op1.toString().toLowerCase() === op2.toString().toLowerCase();
                     default:
                         return new Errores("SEMANTICO", "MENOR IGUAL Invalido", this.linea, this.columna)
@@ -173,10 +158,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.INT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.INT)
                         return parseInt(op1) >= parseInt(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) >= parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "MAYOR IGUAL Invalido", this.linea, this.columna)
@@ -184,10 +167,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.FLOAT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) >= parseFloat(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) >= parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "MAYOR Invalido", this.linea, this.columna)
@@ -195,7 +176,6 @@ export default class Relacionales extends Instruccion {
             case TipoDato.STRING:
                 switch (tipo2) {
                     case TipoDato.STRING:
-                        this.tipoDato = new Tipo(TipoDato.STRING)
                         return op1.toString().toLowerCase() === op2.toString().toLowerCase();
                     default:
                         return new Errores("SEMANTICO", "MAYOR IGUAL Invalido", this.linea, this.columna)
@@ -214,10 +194,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.INT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.INT)
                         return parseInt(op1) < parseInt(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) < parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "MENOR Invalido", this.linea, this.columna)
@@ -225,10 +203,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.FLOAT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) < parseFloat(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) < parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "MENOR Invalido", this.linea, this.columna)
@@ -236,7 +212,6 @@ export default class Relacionales extends Instruccion {
             case TipoDato.STRING:
                 switch (tipo2) {
                     case TipoDato.STRING:
-                        this.tipoDato = new Tipo(TipoDato.STRING)
                         return op1.toString().toLowerCase() === op2.toString().toLowerCase();
                     default:
                         return new Errores("SEMANTICO", "MENOR Invalido", this.linea, this.columna)
@@ -255,10 +230,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.INT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.INT)
                         return parseInt(op1) > parseInt(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) > parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "MAYOR Invalido", this.linea, this.columna)
@@ -266,10 +239,8 @@ export default class Relacionales extends Instruccion {
             case TipoDato.FLOAT:
                 switch (tipo2) {
                     case TipoDato.INT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) > parseFloat(op2)
                     case TipoDato.FLOAT:
-                        this.tipoDato = new Tipo(TipoDato.FLOAT)
                         return parseFloat(op1) > parseFloat(op2)
                     default:
                         return new Errores("SEMANTICO", "MAYOR Invalido", this.linea, this.columna)
@@ -277,7 +248,6 @@ export default class Relacionales extends Instruccion {
             case TipoDato.STRING:
                 switch (tipo2) {
                     case TipoDato.STRING:
-                        this.tipoDato = new Tipo(TipoDato.STRING)
                         return op1.toString().toLowerCase() === op2.toString().toLowerCase();
                     default:
                         return new Errores("SEMANTICO", "MAYOR Invalido", this.linea, this.columna)

@@ -11,6 +11,13 @@ declare global {
   }
 }
 
+interface NodoArchivo {
+  nombre: string;
+  tipo: 'archivo' | 'carpeta';
+  children?: NodoArchivo[];
+  handle?: any;
+}
+
 @Component({
   selector: 'app-ide',
   standalone: true,
@@ -32,10 +39,7 @@ export class IdeComponent {
   showingTerminal: boolean = true;
   terminalOutput: string = '';
   currentTab:string = "salida"
-  archivos = [
-    { nombre: 'main.cmm' },
-    { nombre: 'utils.cmm' },
-  ];
+  estructuraProyecto: NodoArchivo[] = [];
 
   constructor(private cdr: ChangeDetectorRef, private router: Router, private interpreteService: InterpreteService) {}
 
@@ -222,9 +226,35 @@ export class IdeComponent {
     this.currentTab = tab;
   }
 
-  abrirArchivo(archivo: any) {
-    // Lógica para abrir archivo
-    this.codeContent = '// contenido de ' + archivo.nombre;
-    this.terminalOutput = `Archivo ${archivo.nombre} abierto.`;
+  async abrirProyecto() {
+    try {
+      const handle = await window.showDirectoryPicker();
+      this.estructuraProyecto = [await this.leerDirectorio(handle)];
+    } catch (e) {
+      console.error("Error al abrir proyecto:", e);
+    }
+  }
+  
+  async leerDirectorio(dirHandle: any): Promise<NodoArchivo> {
+    const nodo: NodoArchivo = {
+      nombre: dirHandle.name,
+      tipo: 'carpeta',
+      children: [],
+      handle: dirHandle
+    };
+  
+    for await (const [name, handle] of dirHandle.entries()) {
+      if (handle.kind === 'file') {
+        nodo.children!.push({
+          nombre: name,
+          tipo: 'archivo',
+          handle
+        });
+      } else if (handle.kind === 'directory') {
+        nodo.children!.push(await this.leerDirectorio(handle));
+      }
+    }
+  
+    return nodo;
   }
 }

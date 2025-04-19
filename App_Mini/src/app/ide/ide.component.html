@@ -1,6 +1,7 @@
 <!-- ENCABEZADO SUPERIOR -->
 <div class="top-bar">
   <h2>Mini C</h2>
+  <button (click)="abrirProyecto()">Abrir</button>
   <button (click)="createFile()">Crear</button>
   <button (click)="saveCode()">Guardar</button>
   <button (click)="toggleTerminal()">Terminal</button>
@@ -24,10 +25,21 @@
       </div>
     </div>
     <ul>
-      <li *ngFor="let archivo of archivos" (click)="abrirArchivo(archivo)">
-        {{ archivo.nombre }}
-      </li>
+      <ng-container *ngFor="let nodo of estructuraProyecto">
+        <ng-template [ngTemplateOutlet]="mostrarNodo" [ngTemplateOutletContext]="{ nodo: nodo }"></ng-template>
+      </ng-container>
     </ul>
+    <ng-template #mostrarNodo let-nodo="nodo">
+      <li>
+        {{ nodo?.nombre }}
+        <ul *ngIf="nodo?.tipo === 'carpeta'">
+          <ng-container *ngFor="let hijo of nodo?.children">
+            <ng-template [ngTemplateOutlet]="mostrarNodo" [ngTemplateOutletContext]="{ nodo: hijo }"></ng-template>
+          </ng-container>
+        </ul>
+      </li>
+    </ng-template>
+    
   </div>
   <div class="container">
     <!-- EDITOR -->
