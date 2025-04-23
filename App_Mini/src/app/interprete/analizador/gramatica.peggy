@@ -15,6 +15,7 @@
   const Break = require('../sentencias/Break.ts')
   const Return = require('../sentencias/Return.ts')
   const If = require('../sentencias/If.ts')
+  const For = require('../sentencias/For.ts')
 }
 
 inicio = instrs:instrucciones EOF { return instrs; }
@@ -29,6 +30,7 @@ instruccion = imprimir:print ";" { return imprimir; }
             / retu:return ";" { return retu; }
             / bre:break ";" { return bre; }
             / si:sif { return si; }
+            / cf:cfor { return cf; }
 ;
 
 print = "print" "("expr:expresion")" { return new Print.default(expr, location().start.line, location().start.column); }
@@ -51,6 +53,9 @@ break = "break" _ { return new Break.default(location().start.line, location().s
 sif = "if" _ "(" _ expr:expresion _ ")" _ "{" _ inst:instrucciones _ "}" _ "else" _ "{" _ insts:instrucciones _ "}" { return new If.default(expr, inst, null, insts, location().start.line, location().start.column) }
     / "if" _ "(" _ expr:expresion _ ")" _ "{" _ inst:instrucciones _ "}" _ "else" _ si:sif { return new If.default(expr, inst, si, null, location().start.line, location().start.column) }
     / "if" _ "(" _ expr:expresion _ ")" _ "{" _ inst:instrucciones _ "}" { return new If.default(expr, inst, null, null, location().start.line, location().start.column) }
+;
+
+cfor = "for" _ "(" _ dec:declaracion _ ";" _ exp:expresion _ ";" _ asg:asignacion _ ")" _ "{" _ inst:instrucciones _ "}" { return new For.default(dec, exp, asg, inst, location().start.line, location().start.column) }
 ;
 
 /* PRODUCCION PARA EXPRESION */

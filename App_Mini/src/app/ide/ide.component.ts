@@ -11,11 +11,11 @@ declare global {
   }
 }
 
-interface NodoArchivo {
+export interface NodoArchivo {
   nombre: string;
   tipo: 'archivo' | 'carpeta';
+  handle: FileSystemFileHandle | FileSystemDirectoryHandle;
   children?: NodoArchivo[];
-  handle?: any;
 }
 
 @Component({
@@ -39,7 +39,7 @@ export class IdeComponent {
   showingTerminal: boolean = true;
   terminalOutput: string = '';
   currentTab:string = "salida"
-  estructuraProyecto: NodoArchivo[] = [];
+  estructuraProyecto: NodoArchivo | null = null;
 
   constructor(private cdr: ChangeDetectorRef, private router: Router, private interpreteService: InterpreteService) {}
 
@@ -164,6 +164,85 @@ export class IdeComponent {
       this.showTab('salida');
     }
   }
+
+  // funcion para crear proyecto
+  async createProyect() {
+    const nombreProyecto = prompt('¿Cómo quieres llamar tu proyecto?');
+    if (!nombreProyecto) return;
+  
+    try {
+      // 1. Elige la carpeta destino
+      const dirHandle = await window.showDirectoryPicker();
+  
+      // 2. Crea la carpeta del proyecto
+      const projectHandle = await dirHandle.getDirectoryHandle(nombreProyecto, { create: true });
+  
+      // 3. Crea carpeta src
+      const srcHandle = await projectHandle.getDirectoryHandle('src', { create: true });
+  
+      // 4. Crea main.cmm
+      const mainFileHandle = await srcHandle.getFileHandle('main.cmm', { create: true });
+      const mainWritable = await mainFileHandle.createWritable();
+      const codigoInicial = '// Código inicial del archivo main.cmm';
+      await mainWritable.write(codigoInicial);
+      await mainWritable.close();
+  
+      // 5. Crea config.yml
+      const configFileHandle = await projectHandle.getFileHandle('config.yml', { create: true });
+      const configWritable = await configFileHandle.createWritable();
+      const yamlContent = '# Configuración del proyecto';
+      await configWritable.write(yamlContent);
+      await configWritable.close();
+  
+      // 6. Carga main.cmm en el editor
+      const mainFile = await mainFileHandle.getFile();
+      const contenidoMain = await mainFile.text();
+      this.codeContent = contenidoMain;
+  
+      // 7. Actualiza línea/columna
+      this.updateLineCounter();
+      this.updateCursorPosition();
+      this.estructuraProyecto = await this.cargarEstructura(projectHandle);
+      console.log('Proyecto creado exitosamente.');
+  
+    } catch (err) {
+      console.error('Error al crear el proyecto:', err);
+      alert('No se pudo crear el proyecto.');
+    }
+  }
+
+  async cargarEstructura(handle: FileSystemDirectoryHandle): Promise<NodoArchivo> {
+    const nodo: NodoArchivo = {
+      nombre: handle.name,
+      tipo: 'carpeta',
+      handle,
+      children: [],
+    };
+  
+    for await (const [name, childHandle] of (handle as any).entries()) {
+      if (childHandle.kind === 'file') {
+        nodo.children?.push({
+          nombre: name,
+          tipo: 'archivo',
+          handle: childHandle,
+        });
+      } else if (childHandle.kind === 'directory') {
+        const childNode = await this.cargarEstructura(childHandle);
+        nodo.children?.push(childNode);
+      }
+    }
+  
+    return nodo;
+  }
+
+  async abrirArchivo(nodo: NodoArchivo) {
+    const fileHandle = nodo.handle as FileSystemFileHandle;
+    const file = await fileHandle.getFile();
+    const content = await file.text();
+    this.codeContent = content;
+    this.updateLineCounter();
+    this.updateCursorPosition();
+  }
   
   listCaptchas() {
     console.log('Mostrar lista de captchas');
@@ -172,42 +251,6 @@ export class IdeComponent {
 
   toggleTerminal() {
     this.showingTerminal = !this.showingTerminal;
-  }
-  
-  async createFile() {
-    const nombre = prompt('Agregar Nombre al proyecto')
-    if (!nombre) {
-      this.terminalOutput = 'Creacion cancelada'
-      return
-    }
-
-    try {
-      const handle = await window.showDirectoryPicker();
-
-    // Crea carpeta del proyecto
-    const projectDir = await handle.getDirectoryHandle(nombre, { create: true });
-
-    // Crear config.yml
-    const configFile = await projectDir.getFileHandle('config.yml', { create: true });
-    const configWritable = await configFile.createWritable();
-    await configWritable.write('# Configuración del proyecto\n');
-    await configWritable.close();
-
-    // Crear carpeta src
-    const srcDir = await projectDir.getDirectoryHandle('src', { create: true });
-
-    // Crear main.cmm dentro de src
-    const mainFile = await srcDir.getFileHandle('main.cmm', { create: true });
-    const mainWritable = await mainFile.createWritable();
-    await mainWritable.write('// Código principal aquí\n');
-    await mainWritable.close();
-
-    this.terminalOutput = `Proyecto "${nombre}" creado con éxito.`;
-    this.codeContent = '// Código principal aquí\n';
-    } catch (err) {
-      console.log(err)
-      this.terminalOutput = 'Error al crear proyecto'
-    }
   }
   
   showYaml() {
@@ -224,37 +267,6 @@ export class IdeComponent {
 
   showTab(tab: string) {
     this.currentTab = tab;
-  }
-
-  async abrirProyecto() {
-    try {
-      const handle = await window.showDirectoryPicker();
-      this.estructuraProyecto = [await this.leerDirectorio(handle)];
-    } catch (e) {
-      console.error("Error al abrir proyecto:", e);
-    }
-  }
   
-  async leerDirectorio(dirHandle: any): Promise<NodoArchivo> {
-    const nodo: NodoArchivo = {
-      nombre: dirHandle.name,
-      tipo: 'carpeta',
-      children: [],
-      handle: dirHandle
-    };
-  
-    for await (const [name, handle] of dirHandle.entries()) {
-      if (handle.kind === 'file') {
-        nodo.children!.push({
-          nombre: name,
-          tipo: 'archivo',
-          handle
-        });
-      } else if (handle.kind === 'directory') {
-        nodo.children!.push(await this.leerDirectorio(handle));
-      }
-    }
-  
-    return nodo;
   }
 }

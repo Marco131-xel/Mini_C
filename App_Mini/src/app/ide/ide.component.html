@@ -1,8 +1,8 @@
 <!-- ENCABEZADO SUPERIOR -->
 <div class="top-bar">
   <h2>Mini C</h2>
-  <button (click)="abrirProyecto()">Abrir</button>
-  <button (click)="createFile()">Crear</button>
+  <button>Abrir</button>
+  <button (click)="createProyect()">Crear</button>
   <button (click)="saveCode()">Guardar</button>
   <button (click)="toggleTerminal()">Terminal</button>
   <button (click)="showYaml()">Yaml</button>
@@ -24,22 +24,20 @@
         <button>Eliminar</button>
       </div>
     </div>
-    <ul>
-      <ng-container *ngFor="let nodo of estructuraProyecto">
-        <ng-template [ngTemplateOutlet]="mostrarNodo" [ngTemplateOutletContext]="{ nodo: nodo }"></ng-template>
-      </ng-container>
-    </ul>
+    <ul *ngIf="estructuraProyecto">
+      <ng-template [ngTemplateOutlet]="mostrarNodo" [ngTemplateOutletContext]="{ nodo: estructuraProyecto }"></ng-template>
+    </ul>    
     <ng-template #mostrarNodo let-nodo="nodo">
-      <li>
-        {{ nodo?.nombre }}
-        <ul *ngIf="nodo?.tipo === 'carpeta'">
-          <ng-container *ngFor="let hijo of nodo?.children">
+      <li (click)="nodo.tipo === 'archivo' && abrirArchivo(nodo)">
+        <span class="file-icon">{{ nodo.tipo === 'carpeta' ? '📁' : '📄' }}</span>
+        <span [ngClass]="nodo.tipo === 'carpeta' ? 'folder-name' : 'file-name'">{{ nodo.nombre }}</span>
+        <ul *ngIf="nodo.tipo === 'carpeta'">
+          <ng-container *ngFor="let hijo of nodo.children">
             <ng-template [ngTemplateOutlet]="mostrarNodo" [ngTemplateOutletContext]="{ nodo: hijo }"></ng-template>
           </ng-container>
         </ul>
       </li>
-    </ng-template>
-    
+    </ng-template>     
   </div>
   <div class="container">
     <!-- EDITOR -->

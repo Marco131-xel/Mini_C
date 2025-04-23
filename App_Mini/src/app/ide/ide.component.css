@@ -43,7 +43,7 @@ button:hover {
 /* CONTENEDOR PRINCIPAL */
 .main-wrapper {
   display: flex;
-  height: calc(100vh - 32px); /* Altura ajustada de la barra superior */
+  height: calc(100vh - 32px);
 }
 
 /* PANEL IZQUIERDO */
@@ -83,17 +83,42 @@ button:hover {
   overflow-y: auto;
 }
 
+/* Estilo para carpetas y archivos */
 .left-panel li {
-  color: white;
   padding: 6px 8px;
-  cursor: pointer;
+  margin-left: 8px;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
 }
 
 .left-panel li:hover {
-  background-color: #3a3a3a;
+  background-color: #2d2d2d;
 }
 
+/* Sublista (hijos de carpetas) con indentación */
+.left-panel ul {
+  margin-left: 16px;
+  padding-left: 0;
+}
+
+/* Íconos (opcional, con emojis o luego con librerías como lucide o codicons) */
+.file-icon {
+  width: 16px;
+  text-align: center;
+}
+
+/* Diferenciar archivo de carpeta */
+.folder-name {
+  color: #2e86c1;
+  font-weight: bold;
+}
+
+.file-name {
+  color: #ddd;
+}
 .file-buttons {
   display: flex;
   gap: 8px;
