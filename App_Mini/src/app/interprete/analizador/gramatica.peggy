@@ -7,6 +7,7 @@
   const Aritmeticas = require('../operadores/Aritmeticas.ts')
   const Booleanas = require('../operadores/Booleanas.ts')
   const Relacionales = require('../operadores/Relacionales.ts')
+  const { default: Structs, instaStruct, acceStruct, AsigStruct } = require('../operadores/Structs.js')
   const Print = require('../sentencias/Print.ts')
   const Declaracion = require('../sentencias/Declaracion.ts')
   const Asignacion = require('../sentencias/Asignacion.ts')
@@ -31,6 +32,10 @@ instruccion = imprimir:print ";" { return imprimir; }
             / bre:break ";" { return bre; }
             / si:sif { return si; }
             / cf:cfor { return cf; }
+            / sd:structDef { return sd; }
+            / si:structInst { return si; }
+            / as:accesoStruct { return as; }
+            / ss:asigStruct {return ss; }
 ;
 
 print = "print" "("expr:expresion")" { return new Print.default(expr, location().start.line, location().start.column); }
@@ -56,6 +61,27 @@ sif = "if" _ "(" _ expr:expresion _ ")" _ "{" _ inst:instrucciones _ "}" _ "else
 ;
 
 cfor = "for" _ "(" _ dec:declaracion _ ";" _ exp:expresion _ ";" _ asg:asignacion _ ")" _ "{" _ inst:instrucciones _ "}" { return new For.default(dec, exp, asg, inst, location().start.line, location().start.column) }
+;
+
+structDef = "struct" _ id:IDENTIFICADOR _ "{" _ atr:atributos+ _ "}" { return new Structs(id, atr, location().start.line, location().start.column) }
+;
+
+atributos = tip:tipos _ id:IDENTIFICADOR _ ";" _ { return { tipo: tip, id: id }; }
+;
+
+structInst = "struct" _ tip:IDENTIFICADOR _ id:IDENTIFICADOR _ init:structInit? _ ";" { return new instaStruct(tip, id, init, location().start.line, location().start.column) }
+;
+
+structInit = _ "=" _ "{" _ valor:lista _ "}" { return valor; }
+;
+
+lista = exp:expresion resto:(_ "," _ expresion)* { return [exp].concat((resto || []).map(e => e[3])); }
+;
+
+accesoStruct = id:IDENTIFICADOR _ "." _ atributo:IDENTIFICADOR _ ";" { return new acceStruct(id, atributo, location().start.line, location().start.column) }
+;
+
+asigStruct = id:IDENTIFICADOR _ "." _ atributo:IDENTIFICADOR _ "=" _ expr:expresion _ ";" { return new AsigStruct(id, atributo, expr, location().start.line, location().start.column) }
 ;
 
 /* PRODUCCION PARA EXPRESION */

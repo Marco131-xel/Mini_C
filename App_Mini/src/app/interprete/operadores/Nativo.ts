@@ -13,10 +13,26 @@ export default class Nativo extends Instruccion {
         this.valor = valor
     }
     interpretar(arbol: Arbol, tabla: TablaSimbolos) {
+        return this
+    }
+    getValor():any {
         return this.valor
+    }
+    getTipo():Tipo {
+        return this.tipoDato
     }
     getAst(anterior: string): string {
         return ""
+    }
+    
+    override toString(): string {
+        if (this.valor instanceof Map) {
+            const entries = Array.from(this.valor.entries())
+                .map(([key, val]) => `${key}: ${val instanceof Nativo ? val.toString() : val}`)
+                .join(", ");
+            return `{ ${entries} }`;
+        }
+        return String(this.valor);
     }
     
 }

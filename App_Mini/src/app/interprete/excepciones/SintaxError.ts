@@ -10,7 +10,7 @@ export class SintaxError {
 
     private static operadores: Set<string> = new Set([
         "+", "-", "*", "/", "&&", "||", "==", "!=", "<=", ">=", "<", ">", "^", ";"
-        , "\"", "\'", "=", "{", "}"
+        , "\"", "\'", "=", "{", "}", ",", ".", ":"
     ])
 
     private static tokenValido = /[0-9+\-*/().\sA-Za-z#\$]/
