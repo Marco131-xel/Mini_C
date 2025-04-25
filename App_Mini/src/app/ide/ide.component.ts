@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import  Errores from '../interprete/excepciones/Errores';
 import { Router } from '@angular/router';
 import { InterpreteService } from '../interprete/interprete.service';
+import TablaSimbolos from '../interprete/ast/TablaSimbolos';
 
 declare global {
   interface Window {
@@ -35,6 +36,7 @@ export class IdeComponent {
   errores: Errores[] = [];
   currentLine: number = 1; 
   currentColumn: number = 1; 
+  simbolos: any[] = [];
 
   showingTerminal: boolean = true;
   terminalOutput: string = '';
@@ -146,6 +148,7 @@ export class IdeComponent {
         console.log("Errores:", resultado.errores);
 
         this.showingTerminal = true;
+        this.actualizarTablaSimbolos(resultado.tablaSimbolos)
 
         if (this.errores && this.errores.length > 0) {
           this.showTab('errores');
@@ -268,5 +271,15 @@ export class IdeComponent {
   showTab(tab: string) {
     this.currentTab = tab;
   
+  }
+  
+  actualizarTablaSimbolos(tabla: TablaSimbolos) {
+    this.simbolos = tabla.getSimbolos().map(s => ({
+        id: s.getId(),
+        tipo: s.getTipo().toString(),
+        valor: s.getValor(),
+        linea: s.getLinea(),
+        columna: s.getColumna()
+    }));
   }
 }

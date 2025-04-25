@@ -56,4 +56,15 @@ export default class TablaSimbolos {
         }
         return null;
     }
+    public getSimbolos(): Simbolo[] {
+        const simbolos: Simbolo[] = [];
+        let tabla: TablaSimbolos | null = this;
+        while (tabla !== null) {
+            for (const simbolo of tabla.tablaActual.values()) {
+                simbolos.push(simbolo);
+            }
+            tabla = tabla.getAnterior();
+        }
+        return simbolos;
+    }    
 }

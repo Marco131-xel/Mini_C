@@ -81,6 +81,27 @@
         </tr>
       </tbody>
     </table>
+        <!-- Contenido: tabla de símbolos -->
+    <table *ngIf="currentTab === 'tablaSimbolos'" class="tabla-simbolos">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+          <th>Línea</th>
+          <th>Columna</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let simbolo of simbolos">
+          <td>{{ simbolo.id }}</td>
+          <td>{{ simbolo.tipo }}</td>
+          <td>{{ simbolo.valor }}</td>
+          <td>{{ simbolo.linea }}</td>
+          <td>{{ simbolo.columna }}</td>
+        </tr>
+      </tbody>
+    </table>
       </div>
     </div>
   </div>

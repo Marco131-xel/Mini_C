@@ -8,6 +8,7 @@
   const Booleanas = require('../operadores/Booleanas.ts')
   const Relacionales = require('../operadores/Relacionales.ts')
   const { default: Structs, instaStruct, acceStruct, AsigStruct } = require('../operadores/Structs.js')
+  const Ambito = require('../operadores/Ambito.ts')
   const Print = require('../sentencias/Print.ts')
   const Declaracion = require('../sentencias/Declaracion.ts')
   const Asignacion = require('../sentencias/Asignacion.ts')
@@ -36,6 +37,7 @@ instruccion = imprimir:print ";" { return imprimir; }
             / si:structInst { return si; }
             / as:accesoStruct { return as; }
             / ss:asigStruct {return ss; }
+            / amb:ambito { return amb; }
 ;
 
 print = "print" "("expr:expresion")" { return new Print.default(expr, location().start.line, location().start.column); }
@@ -82,6 +84,9 @@ accesoStruct = id:IDENTIFICADOR _ "." _ atributo:IDENTIFICADOR _ ";" { return ne
 ;
 
 asigStruct = id:IDENTIFICADOR _ "." _ atributo:IDENTIFICADOR _ "=" _ expr:expresion _ ";" { return new AsigStruct(id, atributo, expr, location().start.line, location().start.column) }
+;
+
+ambito = "{" _ inst:instrucciones _ "}" { return new Ambito.default(inst, location().start.line, location().start.column) }
 ;
 
 /* PRODUCCION PARA EXPRESION */

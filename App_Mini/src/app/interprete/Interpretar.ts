@@ -10,15 +10,15 @@ var AstDot: string
 
 export class Interpretar {
     
-    public ejecutar(entrada: string): { salida: string, errores: Errores[] } {
+    public ejecutar(entrada: string): { salida: string, errores: Errores[], tablaSimbolos: TablaSimbolos } {
         let salida = "";
+        let tabla = new TablaSimbolos()
         let errores: Errores[] = [];
         const lexicos = SintaxError.erroresLexicos(entrada)
         const sintacticos = SintaxError.erroresSintacticos(entrada)
         try {
             AstDot = ""
             let ast = new Arbol(parser.parse(entrada))
-            let tabla = new TablaSimbolos()
             tabla.setNombre("Global")
             ast.setTablaGlobal(tabla)
             ast.setConsola("")
@@ -46,7 +46,7 @@ export class Interpretar {
                 errores = [...lexicos, ...sintacticos]
             }
         }
-        return {salida, errores}
+        return {salida, errores, tablaSimbolos: tabla}
     }
 
     public ast(req: Request, res: Response) {

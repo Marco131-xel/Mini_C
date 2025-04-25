@@ -90,7 +90,7 @@ export class instaStruct extends Instruccion {
             instancia.set(nombreAttr, new Nativo(tipoAtrr, valor.getValor ? valor.getValor() : valor, this.linea, this.columna))
         }
         // falta agregar this.nombreStruct
-        const simbolo = new Simbolo(new Tipo(TipoDato.STRUCT), this.id, instancia)
+        const simbolo = new Simbolo(new Tipo(TipoDato.STRUCT), this.id, instancia, this.linea, this.columna)
         const creacion = tabla.setVariable(simbolo)
         if (!creacion) {
             return new Errores("SEMANTICO", `Variable ${this.id} ya existe`, this.linea, this.columna)

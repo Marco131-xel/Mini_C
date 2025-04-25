@@ -3,12 +3,16 @@ import Tipo from "./Tipo";
 export default class Simbolo {
     private tipo: Tipo
     private id: string
-    private valor: any
+    private valor: any | undefined
+    private linea: number
+    private columna: number
 
-    constructor(tipo: Tipo, id: string, valor?: any) {
+    constructor(tipo: Tipo, id: string, valor: any, linea: number, columna: number) {
         this.tipo = tipo
-        this.id = id.toLocaleLowerCase()
+        this.id = id.toLowerCase()
         this.valor = valor
+        this.linea = linea
+        this.columna = columna
     }
 
     public getTipo(): Tipo {
@@ -19,7 +23,7 @@ export default class Simbolo {
         this.tipo = tipo
     }
 
-    public getId() {
+    public getId(): string {
         return this.id
     }
 
@@ -27,11 +31,19 @@ export default class Simbolo {
         this.id = id
     }
 
-    public getValor() {
+    public getValor(): any {
         return this.valor
     }
 
     public setValor(valor: any) {
         this.valor = valor
+    }
+
+    public getLinea(): number {
+        return this.linea
+    }
+
+    public getColumna(): number {
+        return this.columna
     }
 }

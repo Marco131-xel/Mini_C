@@ -36,7 +36,7 @@ export default class Declaracion extends Instruccion {
         }
         
         // crear la variable
-        const s = new Simbolo(this.tipoDato, this.identificador, valorInterpretado)
+        const s = new Simbolo(this.tipoDato, this.identificador, valorInterpretado, this.linea, this.columna)
         
         const creacion: Boolean = tabla.setVariable(s)
 
