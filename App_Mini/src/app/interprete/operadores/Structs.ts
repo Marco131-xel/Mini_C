@@ -76,18 +76,23 @@ export class instaStruct extends Instruccion {
         const instancia = new Map<string, any>()
         for (let i = 0; i < atributos.length; i++) {
             const [nombreAttr, tipoAtrr] = atributos[i]
-            const valor = this.valores ? this.valores[i].interpretar(arbol, tabla) : null
-            if (valor instanceof Errores) {
-                return valor
+            let valor = null
+        
+            if (this.valores) {
+                valor = this.valores[i].interpretar(arbol, tabla)
+                if (valor instanceof Errores) {
+                    return valor
+                }
+                if (valor === null || valor.tipoDato === undefined) {
+                    return new Errores("SEMANTICO", `Valor inválido en atributo ${nombreAttr}`, this.linea, this.columna)
+                }
+                if (tipoAtrr.getTipo() !== valor.tipoDato.getTipo()) {
+                    return new Errores("SEMANTICO", `Tipo incompatible en ${nombreAttr}`, this.linea, this.columna)
+                }
+                instancia.set(nombreAttr, new Nativo(tipoAtrr, valor.getValor ? valor.getValor() : valor, this.linea, this.columna))
+            } else {
+                instancia.set(nombreAttr, new Nativo(tipoAtrr, null, this.linea, this.columna))
             }
-            if (this.valores && (valor === null || valor.tipoDato === undefined)) {
-                return new Errores("SEMANTICO", `Valor inválido en atributo ${nombreAttr}`, this.linea, this.columna)
-            }
-            if (this.valores && tipoAtrr.getTipo() !== valor.tipoDato.getTipo()) {
-                return new Errores("SEMANTICO", `Tipo incompatible en ${nombreAttr}`, this.linea, this.columna)
-            }
-            // instanciar            
-            instancia.set(nombreAttr, new Nativo(tipoAtrr, valor.getValor ? valor.getValor() : valor, this.linea, this.columna))
         }
         const simbolo = new Simbolo(new Tipo(TipoDato.STRUCT), this.id, instancia, this.linea, this.columna)
         const creacion = tabla.setVariable(simbolo)
