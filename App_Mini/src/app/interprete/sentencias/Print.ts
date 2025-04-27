@@ -26,13 +26,24 @@ export default class Print extends Instruccion {
             } else {
                 arbol.Print(val.toString());
             }
+        } else if (valor instanceof Map) {
+            let structStr = "{ ";
+            for (const [key, val] of valor.entries()) {
+                if (val instanceof Nativo) {
+                    structStr += `${key}: ${val.getValor()}, `;
+                } else {
+                    structStr += `${key}: ${val}, `;
+                }
+            }
+            structStr = structStr.trim().replace(/,$/, "") + " }";
+            arbol.Print(structStr);
         } else {
             arbol.Print(valor.toString());
         }
-        
+    
         return null;
-    }    
-
+    }
+    
     getAst(anterior: string): string {
         return ""
     }

@@ -89,7 +89,6 @@ export class instaStruct extends Instruccion {
             // instanciar            
             instancia.set(nombreAttr, new Nativo(tipoAtrr, valor.getValor ? valor.getValor() : valor, this.linea, this.columna))
         }
-        // falta agregar this.nombreStruct
         const simbolo = new Simbolo(new Tipo(TipoDato.STRUCT), this.id, instancia, this.linea, this.columna)
         const creacion = tabla.setVariable(simbolo)
         if (!creacion) {

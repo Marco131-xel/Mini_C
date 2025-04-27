@@ -274,12 +274,29 @@ export class IdeComponent {
   }
   
   actualizarTablaSimbolos(tabla: TablaSimbolos) {
-    this.simbolos = tabla.getSimbolos().map(s => ({
+    this.simbolos = tabla.getSimbolos().map(s => {
+      let valor = s.getValor();
+      if (valor instanceof Map) {
+        valor = this.formatMap(valor);
+      }
+      return {
         id: s.getId(),
         tipo: s.getTipo().toString(),
-        valor: s.getValor(),
+        valor: valor,
         linea: s.getLinea(),
         columna: s.getColumna()
-    }));
+      };
+    });
   }
+  
+  private formatMap(map: Map<any, any>): string {
+    let result = "{ "
+    for (let [key, value] of map.entries()) {
+      result += `${key}: ${value}, `
+    }
+    result = result.slice(0, -2)
+    result += " }"
+    return result
+  }
+  
 }
