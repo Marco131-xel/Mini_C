@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import  Errores from '../interprete/excepciones/Errores';
 import { Router } from '@angular/router';
 import { InterpreteService } from '../interprete/interprete.service';
+import { YamlService } from '../interprete/yaml/yaml.service';
 import TablaSimbolos from '../interprete/ast/TablaSimbolos';
 
 declare global {
@@ -48,8 +49,10 @@ export class IdeComponent {
     this.nodoSeleccionado = nodo;
   }
   archivoSeleccionado: any = null;
+  proyectoHandle: FileSystemDirectoryHandle | null = null;
 
-  constructor(private cdr: ChangeDetectorRef, private router: Router, private interpreteService: InterpreteService) {}
+
+  constructor(private cdr: ChangeDetectorRef, private router: Router, private interpreteService: InterpreteService, private yamlService: YamlService) {}
 
   ngOnInit(): void {
     this.updateLineCounter();
@@ -185,30 +188,27 @@ export class IdeComponent {
   
       // 2. Crea la carpeta del proyecto
       const projectHandle = await dirHandle.getDirectoryHandle(nombreProyecto, { create: true });
-  
-      // 3. Crea carpeta src
-      const srcHandle = await projectHandle.getDirectoryHandle('src', { create: true });
-  
-      // 4. Crea main.cmm
-      const mainFileHandle = await srcHandle.getFileHandle('main.cmm', { create: true });
+      this.proyectoHandle = projectHandle
+      // 3. Crea main.cmm directamente en el proyecto
+      const mainFileHandle = await projectHandle.getFileHandle('main.cmm', { create: true });
       const mainWritable = await mainFileHandle.createWritable();
       const codigoInicial = '// Código inicial del archivo main.cmm';
       await mainWritable.write(codigoInicial);
       await mainWritable.close();
   
-      // 5. Crea config.yml
+      // 4. Crea config.yml directamente en el proyecto
       const configFileHandle = await projectHandle.getFileHandle('config.yml', { create: true });
       const configWritable = await configFileHandle.createWritable();
-      const yamlContent = '# Configuración del proyecto';
+      const yamlContent = `proyecto: "${nombreProyecto}"\nmain: "main.cmm"`;
       await configWritable.write(yamlContent);
       await configWritable.close();
   
-      // 6. Carga main.cmm en el editor
+      // 5. Carga main.cmm en el editor
       const mainFile = await mainFileHandle.getFile();
       const contenidoMain = await mainFile.text();
       this.codeContent = contenidoMain;
   
-      // 7. Actualiza línea/columna
+      // 6. Actualiza línea/columna
       this.updateLineCounter();
       this.updateCursorPosition();
       this.estructuraProyecto = await this.cargarEstructura(projectHandle);
@@ -218,7 +218,7 @@ export class IdeComponent {
       console.error('Error al crear el proyecto:', err);
       alert('No se pudo crear el proyecto.');
     }
-  }
+  }  
 
   async cargarEstructura(handle: FileSystemDirectoryHandle): Promise<NodoArchivo> {
     const nodo: NodoArchivo = {
@@ -257,7 +257,7 @@ export class IdeComponent {
     try {
       // 1. Pide al usuario que seleccione una carpeta de proyecto
       const dirHandle = await window.showDirectoryPicker();
-  
+      this.proyectoHandle = dirHandle
       // 2. Carga la estructura de carpetas y archivos
       this.estructuraProyecto = await this.cargarEstructura(dirHandle);
   
@@ -299,7 +299,73 @@ export class IdeComponent {
   
     return null;
   }
-    
+
+  async crearCarpeta() {
+    if (!this.proyectoHandle) {
+      alert('No hay proyecto abierto');
+      return;
+    }
+  
+    const nombreCarpeta = prompt('Ingrese el nombre de la nueva carpeta (separada por comas si es jerárquica, ej: modulo,campos):');
+    if (!nombreCarpeta) return;
+  
+    const partes = nombreCarpeta.split(',').map(p => p.trim());
+    if (partes.length > 1) {
+      // Validar que la ruta padre exista en config.yml
+      const rutaPadre = partes.slice(0, -1).join(',');
+      const existe = await this.validarRutaExiste(rutaPadre);
+      if (!existe) {
+        alert(`La ruta padre "${rutaPadre}" no existe en config.yml. No se puede crear la subcarpeta.`);
+        return;
+      }
+    }
+  
+    try {
+      let handle = this.proyectoHandle;
+  
+      // Crear jerárquicamente las carpetas
+      for (const parte of partes) {
+        handle = await handle.getDirectoryHandle(parte, { create: true });
+      }
+  
+      console.log(`Carpeta '${nombreCarpeta}' creada`);
+      this.estructuraProyecto = await this.cargarEstructura(this.proyectoHandle);
+    } catch (error) {
+      console.log('Error al crear la carpeta: ', error);
+      alert('No se pudo crear la carpeta');
+    }
+  }
+  
+  async validarRutaExiste(rutaJerarquica: string): Promise<boolean> {
+    if (!this.proyectoHandle) {
+      console.error("No hay proyecto abierto.");
+      return false;
+    }
+  
+    try {
+      const configHandle = await this.proyectoHandle.getFileHandle('config.yml');
+      const file = await configHandle.getFile();
+      const contenido = await file.text();
+  
+      const estructura = this.yamlService.ejecutar(contenido);
+      const partes = rutaJerarquica.split(',').map(p => p.trim());
+  
+      let actual = estructura;
+      for (const parte of partes) {
+        if (actual && typeof actual === 'object' && parte in actual) {
+          actual = actual[parte];
+        } else {
+          return false;
+        }
+      }
+  
+      return true;
+    } catch (e) {
+      console.error("Error al validar existencia de ruta:", e);
+      return false;
+    }
+  }
+
   listCaptchas() {
     console.log('Mostrar lista de captchas');
     this.router.navigate(['/lista-captchas']);
