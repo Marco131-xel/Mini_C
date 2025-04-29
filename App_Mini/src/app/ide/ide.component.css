@@ -82,42 +82,61 @@ button:hover {
   max-height: 80%;
   overflow-y: auto;
 }
+/* HEADER DEL PROYECTO */
+.project-header {
+  font-weight: bold;
+  color: #ccc;
+  padding: 10px;
+  font-size: 14px;
+  border-bottom: 1px solid #444;
+}
 
-/* Estilo para carpetas y archivos */
+/* ÁRBOL DE ARCHIVOS */
+.file-tree {
+  margin-top: 10px;
+  overflow-y: auto;
+  max-height: calc(100% - 100px); /* para que no tape los botones */
+}
+
+/* ESTILO DE ARCHIVOS Y CARPETAS */
+.left-panel ul {
+  list-style: none;
+  padding-left: 10px;
+}
+
 .left-panel li {
-  padding: 6px 8px;
-  margin-left: 8px;
+  padding: 4px 8px;
   border-radius: 4px;
-  display: flex;
+  display: block;
   align-items: center;
-  gap: 8px;
-  transition: background-color 0.2s ease;
+  cursor: pointer;
+  gap: 6px;
+  transition: background-color 0.2s;
 }
 
 .left-panel li:hover {
   background-color: #2d2d2d;
 }
 
-/* Sublista (hijos de carpetas) con indentación */
-.left-panel ul {
-  margin-left: 16px;
-  padding-left: 0;
+/* Archivo o carpeta seleccionada */
+.left-panel li.selected {
+  background-color: #094771;
 }
 
-/* Íconos (opcional, con emojis o luego con librerías como lucide o codicons) */
-.file-icon {
-  width: 16px;
-  text-align: center;
-}
-
-/* Diferenciar archivo de carpeta */
+/* Nombres */
 .folder-name {
-  color: #2e86c1;
   font-weight: bold;
+  color: #4ea1d3;
 }
 
 .file-name {
-  color: #ddd;
+  color: #ccc;
+}
+
+/* Icono */
+.file-icon {
+  width: 20px;
+  text-align: center;
 }
 .file-buttons {
   display: flex;
@@ -139,7 +158,6 @@ button:hover {
   background-color: #333;
   color: white;
 }
-
 
 /* CONTENEDOR DEL EDITOR Y TERMINAL */
 .container {

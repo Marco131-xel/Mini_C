@@ -42,6 +42,12 @@ export class IdeComponent {
   terminalOutput: string = '';
   currentTab:string = "salida"
   estructuraProyecto: NodoArchivo | null = null;
+  nodoSeleccionado: any = null;
+
+  seleccionarNodo(nodo: any) {
+    this.nodoSeleccionado = nodo;
+  }
+  archivoSeleccionado: any = null;
 
   constructor(private cdr: ChangeDetectorRef, private router: Router, private interpreteService: InterpreteService) {}
 
@@ -247,6 +253,53 @@ export class IdeComponent {
     this.updateCursorPosition();
   }
   
+  async abrirProyecto() {
+    try {
+      // 1. Pide al usuario que seleccione una carpeta de proyecto
+      const dirHandle = await window.showDirectoryPicker();
+  
+      // 2. Carga la estructura de carpetas y archivos
+      this.estructuraProyecto = await this.cargarEstructura(dirHandle);
+  
+      // 3. Busca automáticamente el archivo 'main.cmm' y lo abre
+      const mainFileHandle = await this.buscarArchivo(this.estructuraProyecto, 'main.cmm');
+  
+      if (mainFileHandle) {
+        const file = await mainFileHandle.getFile();
+        const content = await file.text();
+        this.codeContent = content;
+        this.updateLineCounter();
+        this.updateCursorPosition();
+        console.log('Proyecto abierto exitosamente.');
+      } else {
+        console.warn('No se encontró el archivo main.cmm en el proyecto.');
+        this.codeContent = '';
+        this.updateLineCounter();
+        this.updateCursorPosition();
+      }
+    } catch (err) {
+      console.error('Error al abrir el proyecto:', err);
+      alert('No se pudo abrir el proyecto.');
+    }
+  }
+
+  private async buscarArchivo(nodo: NodoArchivo, nombreArchivo: string): Promise<FileSystemFileHandle | null> {
+    if (nodo.tipo === 'archivo' && nodo.nombre === nombreArchivo) {
+      return nodo.handle as FileSystemFileHandle;
+    }
+  
+    if (nodo.tipo === 'carpeta' && nodo.children) {
+      for (const child of nodo.children) {
+        const result = await this.buscarArchivo(child, nombreArchivo);
+        if (result) {
+          return result;
+        }
+      }
+    }
+  
+    return null;
+  }
+    
   listCaptchas() {
     console.log('Mostrar lista de captchas');
     this.router.navigate(['/lista-captchas']);

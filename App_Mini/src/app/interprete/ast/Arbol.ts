@@ -8,7 +8,7 @@ export default class Arbol {
     private consola: string
     private tablaGlobal: TablaSimbolos
     private errores: Array<Errores>
-    private structs: Map<string, DefStruct> = new Map();
+    private structs: Map<string, DefStruct> = new Map()
 
     constructor(instrucciones: Array<Instruccion>) {
         this.instrucciones = instrucciones

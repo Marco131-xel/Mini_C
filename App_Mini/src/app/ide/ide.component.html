@@ -1,7 +1,7 @@
 <!-- ENCABEZADO SUPERIOR -->
 <div class="top-bar">
   <h2>Mini C</h2>
-  <button>Abrir</button>
+  <button (click)="abrirProyecto()">Abrir</button>
   <button (click)="createProyect()">Crear</button>
   <button (click)="saveCode()">Guardar</button>
   <button (click)="toggleTerminal()">Terminal</button>
@@ -17,18 +17,26 @@
 <!-- CONTENEDOR PRINCIPAL -->
 <div class="main-wrapper">
   <div class="left-panel">
-    <div class="file-bar">
-      <h3>Archivos</h3>
-      <div class="file-buttons">
-        <button>Crear</button>
-        <button>Eliminar</button>
-      </div>
+    <!-- Botones crear y eliminar -->
+    <h3>Archivos</h3>
+    <div class="file-buttons">
+      <button>Crear</button>
+      <button>Eliminar</button>
     </div>
-    <ul *ngIf="estructuraProyecto">
-      <ng-template [ngTemplateOutlet]="mostrarNodo" [ngTemplateOutletContext]="{ nodo: estructuraProyecto }"></ng-template>
-    </ul>    
+    <!-- Mostrar nombre del proyecto -->
+    <div class="project-header" *ngIf="estructuraProyecto">
+      {{ estructuraProyecto.nombre }}
+    </div>
+    <!-- Árbol de archivos -->
+    <div class="file-tree">
+      <ul *ngIf="estructuraProyecto">
+        <ng-template [ngTemplateOutlet]="mostrarNodo" [ngTemplateOutletContext]="{ nodo: estructuraProyecto }"></ng-template>
+      </ul>    
+    </div>
+  
+    <!-- Plantilla para los nodos -->
     <ng-template #mostrarNodo let-nodo="nodo">
-      <li (click)="nodo.tipo === 'archivo' && abrirArchivo(nodo)">
+      <li (click)="nodo.tipo === 'archivo' && abrirArchivo(nodo)" [class.selected]="nodo === archivoSeleccionado">
         <span class="file-icon">{{ nodo.tipo === 'carpeta' ? '📁' : '📄' }}</span>
         <span [ngClass]="nodo.tipo === 'carpeta' ? 'folder-name' : 'file-name'">{{ nodo.nombre }}</span>
         <ul *ngIf="nodo.tipo === 'carpeta'">
@@ -37,8 +45,9 @@
           </ng-container>
         </ul>
       </li>
-    </ng-template>     
+    </ng-template>   
   </div>
+  
   <div class="container">
     <!-- EDITOR -->
     <div class="editor-container">
