@@ -346,149 +346,143 @@ export class IdeComponent {
   }
   
   async validarRutaExiste(rutaJerarquica: string): Promise<boolean> {
-    if (!this.proyectoHandle) {
-      console.error("No hay proyecto abierto.");
-      return false;
-    }
+    if (!this.proyectoHandle) return false;
   
     try {
       const configHandle = await this.proyectoHandle.getFileHandle('config.yml');
       const file = await configHandle.getFile();
       const contenido = await file.text();
-  
       const ast = this.yamlService.ejecutar(contenido);
       const estructura = this.yamlService.convertirASTaObjeto(ast);
   
       const partes = rutaJerarquica.split(',').map(p => p.trim());
-  
-      let actual: any = estructura;
-      for (const parte of partes) {
-        if (typeof actual === 'object' && actual !== null) {
-          if (Array.isArray(actual)) {
-            const encontrado = actual.find((item: any) => item && parte in item);
-            if (encontrado) {
-              actual = encontrado[parte];
-            } else {
-              return false;
-            }
-          } else if (parte in actual) {
-            actual = actual[parte];
-          } else {
-            return false;
-          }
-        } else {
-          return false;
-        }
+      // carpeta
+      if (partes.length === 1) {
+        return estructura[partes[0]] !== undefined;
       }
-  
-      return true;
+      // archivo
+      if (partes.length === 2) {
+        const [modulo, archivo] = partes;
+        return estructura[modulo]?.some((item: any) => item[archivo] !== undefined) ?? false;
+      }
+      return false;
     } catch (e) {
-      console.error("Error al validar existencia de ruta:", e);
+      console.error("Error al validar ruta:", e);
       return false;
     }
   }
   
-  async carpetaYml(partes: string[]) {
+  async actualizarConfigYml(modificacion: (configObj: any) => void) {
     if (!this.proyectoHandle) return;
   
     try {
       const configHandle = await this.proyectoHandle.getFileHandle('config.yml');
       const file = await configHandle.getFile();
       const contenido = await file.text();
-      const estructura = this.yamlService.ejecutar(contenido);
-  
-      const configObj: any = {};
-      for (const item of estructura) {
-        if (item.tipo === 'llave') {
-          configObj[item.id] = item.valor;
-        } else if (item.tipo === 'lista') {
-          configObj[item.id] = item.parametros || [];
-        }
-      }
-  
+      const ast = this.yamlService.ejecutar(contenido);
+      const configObj = this.yamlService.convertirASTaObjeto(ast);
+      modificacion(configObj);
+      const nuevoYaml = this.yamlService.convertirObjetoAYaml(configObj);
+      const writable = await configHandle.createWritable();
+      await writable.write(nuevoYaml);
+      await writable.close();
+    } catch (err) {
+      console.error("Error al actualizar config.yml", err);
+    }
+  }
+  // funciona agregar carpeta a yml
+  async carpetaYml(partes: string[]) {
+    await this.actualizarConfigYml((configObj) => {
       for (const parte of partes) {
-        if (!(parte in configObj)) {
+        if (!configObj[parte]) {
           configObj[parte] = [];
         }
       }
-
-      const nuevoYaml = this.generarYamlDesdeObjeto(configObj);
-  
-      const writable = await configHandle.createWritable();
-      await writable.write(nuevoYaml);
-      await writable.close();
-      console.log("config.yml actualizado con nuevos modulos");
-    } catch (err) {
-      console.error("Error al agregar modulos a config.yml", err);
-    }
+    });
   }
-
+  
+  // funcion para agregar archivo a yml
   async archivoYml(partes: string[]) {
-    if (!this.proyectoHandle) return;
     if (partes.length < 2) return;
+    const [modulo, archivo] = [partes[0], partes[partes.length - 1]];
   
-    const modulo = partes[0];
-    const archivo = partes[1];
-    const archivoNombre = `${archivo}.cmm`;
-  
-    try {
-      const configHandle = await this.proyectoHandle.getFileHandle('config.yml');
-      const file = await configHandle.getFile();
-      const contenido = await file.text();
-      const estructura = this.yamlService.ejecutar(contenido);
-  
-      const configObj: any = {};
-      for (const item of estructura) {
-        if (item.tipo === 'llave') {
-          configObj[item.id] = item.valor;
-        } else if (item.tipo === 'lista') {
-          configObj[item.id] = item.parametros || [];
-        }
-      }
-  
-      if (!(modulo in configObj)) {
+    await this.actualizarConfigYml((configObj) => {
+      if (!configObj[modulo]) {
         configObj[modulo] = [];
       }
-
-      const yaExiste = configObj[modulo].some((entry: any) => typeof entry === 'object' && archivo in entry);
-      if (!yaExiste) {
-        configObj[modulo].push({ [archivo]: archivoNombre });
+      if (!configObj[modulo].some((item: any) => item[archivo])) {
+        configObj[modulo].push({ [archivo]: `${archivo}.cmm` });
       }
-  
-      const nuevoYaml = this.generarYamlDesdeObjeto(configObj);
-      const writable = await configHandle.createWritable();
-      await writable.write(nuevoYaml);
-      await writable.close();
-      console.log("Archivo agregado a config.yml");
-    } catch (err) {
-      console.error("Error al actualizar config.yml con archivo", err);
-    }
+    });
   }
   
-  generarYamlDesdeObjeto(obj: any): string {
-    let yaml = '';
-    for (const key in obj) {
-      const value = obj[key];
-      if (typeof value === 'string') {
-        yaml += `${key}: "${value}"\n`;
-      } else if (Array.isArray(value)) {
-        yaml += `${key}:\n`;
-        for (const item of value) {
-          if (typeof item === 'object') {
-            const subKey = Object.keys(item)[0];
-            const subValue = item[subKey];
-            yaml += `  - ${subKey}: "${subValue}"\n`;
-          } else {
-            yaml += `  - ${item}\n`;
+  // funcion para eliminar
+  async eliminarElemento() {
+    if (!this.proyectoHandle) {
+      alert('No hay proyecto abierto');
+      return;
+    }
+  
+    const tipo = prompt("¿Que deseas eliminar? Escribe 'carpeta' o 'archivo':")?.toLowerCase();
+    if (tipo !== 'carpeta' && tipo !== 'archivo') return;
+  
+    const entrada = prompt("Ingresa la ruta jerarquica (ej: modulo, archivo):");
+    if (!entrada) return;
+  
+    const partes = entrada.split(',').map(p => p.trim());
+    if (partes.length === 0) return;
+  
+    try {
+      const existe = await this.validarRutaExiste(entrada);
+      if (!existe) {
+        alert(`La ruta "${entrada}" no existe en el proyecto.`);
+        return;
+      }
+      await this.eliminarDelSistema(partes, tipo);
+      await this.eliminarDeConfigYml(partes, tipo);
+  
+      this.estructuraProyecto = await this.cargarEstructura(this.proyectoHandle);
+      console.log(`${tipo} eliminado exitosamente`);
+    } catch (err) {
+      console.error(`Error al eliminar ${tipo}:`, err);
+      alert(`No se pudo eliminar el ${tipo}`);
+    }
+  }
+
+  async eliminarDelSistema(partes: string[], tipo: 'carpeta' | 'archivo') {
+    let handle = this.proyectoHandle!;
+    const nombreFinal = partes[partes.length - 1];
+  
+    for (let i = 0; i < partes.length - 1; i++) {
+      handle = await handle.getDirectoryHandle(partes[i]);
+    }
+  
+    if (tipo === 'carpeta') {
+      await handle.removeEntry(nombreFinal, { recursive: true });
+    } else {
+      await handle.removeEntry(`${nombreFinal}.cmm`);
+    }
+  }
+
+  async eliminarDeConfigYml(partes: string[], tipo: 'carpeta' | 'archivo') {
+    await this.actualizarConfigYml((configObj) => {
+      if (tipo === 'carpeta') {
+        delete configObj[partes[0]];
+      } else {
+        const [modulo, archivo] = partes;
+        if (configObj[modulo]) {
+          configObj[modulo] = configObj[modulo].filter(
+            (item: any) => !item[archivo]
+          );
+          
+          if (configObj[modulo].length === 0) {
+            delete configObj[modulo];
           }
         }
-      } else {
-        yaml += `${key}: ${JSON.stringify(value)}\n`;
       }
-    }
-    return yaml.trim();
+    });
   }
-  
+
   listCaptchas() {
     console.log('Mostrar lista de captchas');
     this.router.navigate(['/lista-captchas']);
