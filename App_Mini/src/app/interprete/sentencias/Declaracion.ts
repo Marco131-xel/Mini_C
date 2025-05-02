@@ -5,6 +5,7 @@ import Tipo, {TipoDato} from "../ast/Tipo"
 import Errores from "../excepciones/Errores"
 import Contador from "../ast/Contador"
 import Simbolo from "../ast/Simbolo"
+import LLamada from "../funciones/Llamada"
 
 export default class Declaracion extends Instruccion {
     
@@ -19,19 +20,31 @@ export default class Declaracion extends Instruccion {
 
     interpretar(arbol: Arbol, tabla: TablaSimbolos) {
         // interpretado la expresion
-        const valorInterpretado = (this.valor == null) 
-            ? this.valoresDefault() 
-            : this.valor.interpretar(arbol, tabla)
+        let valorInterpretado;
+        if (this.valor == null) {
+            valorInterpretado = this.valoresDefault();
+        } else {
+            valorInterpretado = this.valor.interpretar(arbol, tabla);
+            if (valorInterpretado instanceof LLamada) {
+                // si llamada funcion interpretar
+                valorInterpretado = valorInterpretado.interpretar(arbol, tabla);
+            }
+        }
         
-        // verficamos si tiene error
         if (valorInterpretado instanceof Errores) {
-            return valorInterpretado
+            return valorInterpretado;
         }
 
-        // validamos tipos
         if (this.valor != null) {
-            if (this.valor.tipoDato.getTipo() != this.tipoDato.getTipo()) {
-                return new Errores("SEMANTICO", "Tipo "+ this.tipoDato.getTipo() + " erroneo", this.linea, this.columna);
+            const tipoValor = this.valor.tipoDato.getTipo();
+            const tipoDeclaracion = this.tipoDato.getTipo();
+            
+            if (tipoValor !== tipoDeclaracion) {
+                if (!(tipoValor === TipoDato.INT && tipoDeclaracion === TipoDato.FLOAT)) {
+                    return new Errores("SEMANTICO", 
+                        `Tipo ${TipoDato[tipoValor]} no compatible con ${TipoDato[tipoDeclaracion]}`,
+                        this.linea, this.columna);
+                }
             }
         }
         
@@ -43,7 +56,7 @@ export default class Declaracion extends Instruccion {
         if (!creacion) {
             return new Errores("SEMANTICO", "Variable " + this.identificador + " ya existe", this.linea, this.columna);
         }
-        return null
+        return null;
     }
 
     valoresDefault(): boolean | string | number | null {

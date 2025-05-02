@@ -2,6 +2,7 @@ import TablaSimbolos from "./TablaSimbolos"
 import {Instruccion} from "../abstracto/Instruccion"
 import Errores from "../excepciones/Errores"
 import {DefStruct} from "../operadores/Structs"
+import SimFuncion from "../funciones/SimFuncion"
 
 export default class Arbol {
     private instrucciones: Array<Instruccion>
@@ -9,6 +10,7 @@ export default class Arbol {
     private tablaGlobal: TablaSimbolos
     private errores: Array<Errores>
     private structs: Map<string, DefStruct> = new Map()
+    private funciones: Map<string, SimFuncion> = new Map()
 
     constructor(instrucciones: Array<Instruccion>) {
         this.instrucciones = instrucciones
@@ -63,5 +65,13 @@ export default class Arbol {
 
     public getStruct(nombre: string): DefStruct | undefined {
         return this.structs.get(nombre)
+    }
+
+    public setFuncion(nombre: string, funcion: SimFuncion): void {
+        this.funciones.set(nombre, funcion)
+    }
+
+    public getFuncion(nombre: string): SimFuncion | undefined {
+        return this.funciones.get(nombre)
     }
 }

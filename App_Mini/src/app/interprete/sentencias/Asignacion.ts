@@ -30,8 +30,18 @@ export default class Asignacion extends Instruccion {
         }
 
         // validar tipos
-        if (variable.getTipo().getTipo() != this.exp.tipoDato.getTipo()) {
-            return new Errores("SEMANTICO", this.exp.tipoDato.getTipo() + " tipo erroneo en asignacion", this.linea, this.columna);
+        const tipoVariable = variable.getTipo().getTipo();
+        const tipoExpresion = this.exp.tipoDato.getTipo();
+        
+        if (tipoVariable !== tipoExpresion) {
+            if (!(tipoExpresion === TipoDato.INT && tipoVariable === TipoDato.FLOAT)) {
+                return new Errores(
+                    "SEMANTICO",
+                    `tipo ${TipoDato[tipoExpresion]} no compatible con ${TipoDato[tipoVariable]} en asignacion`,
+                    this.linea,
+                    this.columna
+                );
+            }
         }
         variable.setValor(newValor)
         return null

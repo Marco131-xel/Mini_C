@@ -18,6 +18,8 @@
   const Return = require('../sentencias/Return.ts')
   const If = require('../sentencias/If.ts')
   const For = require('../sentencias/For.ts')
+  const Function = require('../funciones/Function.ts')
+  const Llamada = require('../funciones/Llamada.ts')
 }
 
 inicio = instrs:instrucciones EOF { return instrs; }
@@ -38,6 +40,8 @@ instruccion = imprimir:print ";" { return imprimir; }
             / as:accesoStruct { return as; }
             / ss:asigStruct {return ss; }
             / amb:ambito { return amb; }
+            / fun:funcion { return fun; }
+            / ll:llamada { return ll; }
 ;
 
 print = "print" "("expr:expresion")" { return new Print.default(expr, location().start.line, location().start.column); }
@@ -89,8 +93,31 @@ asigStruct = id:IDENTIFICADOR _ "." _ atributo:IDENTIFICADOR _ "=" _ expr:expres
 ambito = "{" _ inst:instrucciones _ "}" { return new Ambito.default(inst, location().start.line, location().start.column) }
 ;
 
+funcion = tip:tipos _ id:IDENTIFICADOR _ "(" _ params:parametros? _ ")" _ "{" _ inst:instrucciones _ "}" { return new Function.default(tip, id, params || [], inst, location().start.line, location().start.column) }
+;
+
+llamada = id:IDENTIFICADOR _ "(" _ args:argumentos? _ ")" _ ";" { return new Llamada.default(id, args || [], location().start.line, location().start.column) }
+;
+
+parametros = first:parametro rest:(_ "," _ parametro)* { return [first, ...rest.map(r => r[3])] }
+;
+
+parametro = tip:tipos _ id:IDENTIFICADOR { return { tipo: tip, id: id } }
+;
+
+argumentos = first:expresion rest:(_ "," _ expresion)* { return [first, ...rest.map(r => r[3])] }
+;
+
 /* PRODUCCION PARA EXPRESION */
-expresion = or
+expresion = exprStruct
+;
+
+exprStruct = id:IDENTIFICADOR _ "." _ atr:IDENTIFICADOR { return new acceStruct(id, atr, location().start.line, location().start.column) }
+          / llamadaExpresion
+;
+
+llamadaExpresion = id:IDENTIFICADOR _ "(" _ args:argumentos? _ ")" { return new Llamada.default(id, args || [], location().start.line, location().start.column) }
+                 / or
 ;
 
 or = izq:and _ "||" _ der:or { return new Booleanas.default(Booleanas.Operadores.OR, location().start.line, location().start.column, izq, der); }

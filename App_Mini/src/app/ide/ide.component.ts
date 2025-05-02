@@ -474,10 +474,6 @@ export class IdeComponent {
           configObj[modulo] = configObj[modulo].filter(
             (item: any) => !item[archivo]
           );
-          
-          if (configObj[modulo].length === 0) {
-            delete configObj[modulo];
-          }
         }
       }
     });
