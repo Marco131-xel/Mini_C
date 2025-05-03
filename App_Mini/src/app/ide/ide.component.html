@@ -37,7 +37,12 @@
     <!-- Plantilla para los nodos -->
     <ng-template #mostrarNodo let-nodo="nodo">
       <li (click)="nodo.tipo === 'archivo' && abrirArchivo(nodo)" [class.selected]="nodo === archivoSeleccionado">
-        <span class="file-icon">{{ nodo.tipo === 'carpeta' ? '📁' : '📄' }}</span>
+        <span class="file-icon">
+          <span *ngIf="nodo.tipo === 'carpeta'">📁</span>
+          <span *ngIf="nodo.tipo === 'archivo' && nodo.nombre.endsWith('.dot')">📊</span>
+          <span *ngIf="nodo.tipo === 'archivo' && nodo.nombre.endsWith('.png')">🖼️</span>
+          <span *ngIf="nodo.tipo === 'archivo' && !nodo.nombre.endsWith('.dot') && !nodo.nombre.endsWith('.png')">📄</span>
+        </span>
         <span [ngClass]="nodo.tipo === 'carpeta' ? 'folder-name' : 'file-name'">{{ nodo.nombre }}</span>
         <ul *ngIf="nodo.tipo === 'carpeta'">
           <ng-container *ngFor="let hijo of nodo.children">
@@ -113,5 +118,12 @@
     </table>
       </div>
     </div>
+  </div>
+</div>
+<!-- VISOR DE IMAGEN -->
+<div class="image-preview-container" *ngIf="showImagePreview">
+  <img [src]="imagePreview" alt="Preview" class="image-preview">
+  <div class="image-info" *ngIf="archivoSeleccionado">
+      {{ archivoSeleccionado.nombre }}
   </div>
 </div>

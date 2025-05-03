@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { InterpreteService } from '../interprete/interprete.service';
 import { YamlService } from '../interprete/yaml/yaml.service';
 import TablaSimbolos from '../interprete/ast/TablaSimbolos';
+import * as Viz from '@viz-js/viz';
 
 declare global {
   interface Window {
@@ -50,6 +51,8 @@ export class IdeComponent {
   }
   archivoSeleccionado: any = null;
   proyectoHandle: FileSystemDirectoryHandle | null = null;
+  imagePreview: string | null = null;
+  showImagePreview: boolean = false;
 
 
   constructor(private cdr: ChangeDetectorRef, private router: Router, private interpreteService: InterpreteService, private yamlService: YamlService) {}
@@ -68,6 +71,7 @@ export class IdeComponent {
     const file = event.target.files[0];
     if (file) {
       this.selectedFile = file;
+      this.archivoSeleccionado = null;
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.codeContent = e.target.result;
@@ -146,7 +150,7 @@ export class IdeComponent {
   }
   
   // funcion para compilar codigo
-  compileCode() {
+  async compileCode() {
     if (this.codeContent.trim()) {
       try {
         const resultado = this.interpreteService.ejecutarCodigo(this.codeContent);
@@ -156,7 +160,7 @@ export class IdeComponent {
         console.log("Salida:", resultado.salida);
         console.log("Errores:", resultado.errores);
         //console.log("DOT del AST:\n", resultado.astDot);
-        this.saveDotFile(resultado.astDot);
+        await this.saveDotFile(resultado.astDot);
         this.showingTerminal = true;
         this.actualizarTablaSimbolos(resultado.tablaSimbolos)
 
@@ -178,10 +182,99 @@ export class IdeComponent {
     }
   }
 
-  saveDotFile(dotContent: string): void {
-    const filename = 'ast.dot';
-    this.downloadFile(filename, dotContent);
+  async saveDotFile(dotContent: string): Promise<void> {
+    let baseName = 'ast'; // por defecto
+
+    if (this.selectedFile) {
+        baseName = this.selectedFile.name.replace('.cmm', '');
+    } 
+    else if (this.nodoSeleccionado && this.nodoSeleccionado.nombre.endsWith('.cmm')) {
+        baseName = this.nodoSeleccionado.nombre.replace('.cmm', '');
+    }
+    else if (this.archivoSeleccionado && this.archivoSeleccionado.nombre.endsWith('.cmm')) {
+        baseName = this.archivoSeleccionado.nombre.replace('.cmm', '');
+    }
+
+    try {
+        // guardar archivo DOT
+        const dotFilename = `${baseName}.dot`;
+        if (this.proyectoHandle) {
+            const dotHandle = await this.proyectoHandle.getFileHandle(dotFilename, { create: true });
+            const writable = await dotHandle.createWritable();
+            await writable.write(dotContent);
+            await writable.close();
+        } else {
+            this.downloadFile(dotFilename, dotContent);
+        }
+        // convertir y guardar PNG
+        const pngBlob = await this.dotToPng(dotContent);
+        const pngFilename = `${baseName}.png`;
+        
+        if (this.proyectoHandle) {
+            const pngHandle = await this.proyectoHandle.getFileHandle(pngFilename, { create: true });
+            const writable = await pngHandle.createWritable();
+            await writable.write(pngBlob);
+            await writable.close();
+            await this.actualizarEstructuraProyecto();
+        } else {
+            const pngUrl = URL.createObjectURL(pngBlob);
+            const a = document.createElement('a');
+            a.href = pngUrl;
+            a.download = pngFilename;
+            a.click();
+            URL.revokeObjectURL(pngUrl);
+        }
+        
+    } catch (error) {
+        console.error('Error al guardar archivos:', error);
+    }
   }
+  // funcion para convetir dot a png
+  async dotToPng(dotContent: string): Promise<Blob> {
+    try {
+      const viz = await Viz.instance();
+      const svg = viz.renderSVGElement(dotContent);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d')!;
+      
+      const img = new Image();
+      const svgStr = new XMLSerializer().serializeToString(svg);
+      const svgBlob = new Blob([svgStr], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(svgBlob);
+  
+      return new Promise((resolve, reject) => {
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          
+          canvas.toBlob((blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error("No se pudo generar PNG"));
+          }, 'image/png');
+          
+          URL.revokeObjectURL(url);
+        };
+  
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("Error al cargar SVG"));
+        };
+  
+        img.src = url;
+      });
+    } catch (error) {
+      console.error("Error al convertir DOT a PNG:", error);
+      throw error;
+    }
+  }
+
+  async actualizarEstructuraProyecto(): Promise<void> {
+    if (this.proyectoHandle) {
+        this.estructuraProyecto = await this.cargarEstructura(this.proyectoHandle);
+        this.cdr.detectChanges();
+    }
+}
 
   // funcion para crear proyecto
   async createProyect() {
@@ -247,13 +340,29 @@ export class IdeComponent {
   }
   // funcion para abrir proyecto y ver en el editor
   async abrirArchivo(nodo: NodoArchivo) {
+    this.archivoSeleccionado = nodo;
     const fileHandle = nodo.handle as FileSystemFileHandle;
     const file = await fileHandle.getFile();
-    const content = await file.text();
-    this.codeContent = content;
+    
+    if (nodo.nombre.endsWith('.png')) {
+        // Es una imagen PNG
+        const reader = new FileReader();
+        reader.onload = (e: any) => {
+            this.imagePreview = e.target.result;
+            this.showImagePreview = true;
+            this.codeContent = ''; // Limpiar el editor de texto
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // Es un archivo de texto
+        this.showImagePreview = false;
+        const content = await file.text();
+        this.codeContent = content;
+    }
+    
     this.updateLineCounter();
     this.updateCursorPosition();
-  }
+}
 
   // para abrir proyecto
   async abrirProyecto() {
