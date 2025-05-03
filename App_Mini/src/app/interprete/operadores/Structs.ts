@@ -130,7 +130,7 @@ export class acceStruct extends Instruccion {
 
         const atributo = valor.get(this.atributo)
         if (atributo == undefined) {
-            return new Errores("SEMANTICO", `El atributo ${this.atributo} no existe`, this.linea, this.columna)
+            return new Errores("SEMANTICO", `El atributo ${this.atributo} no existe en el struct ${this.idStruct}`, this.linea, this.columna)
         }
 
         this.tipoDato = simbolo.getTipo()
@@ -172,7 +172,7 @@ export class AsigStruct extends Instruccion {
         }
 
         if (!valor.has(this.atributp)) {
-            return new Errores("SEMANTICO", `El atributo ${this.atributp} no existe`, this.linea, this.columna)
+            return new Errores("SEMANTICO", `El atributo ${this.atributp} no existe en el struct ${this.idStruct}`, this.linea, this.columna)
         }
 
         valor.set(this.atributp, nuevoValor)

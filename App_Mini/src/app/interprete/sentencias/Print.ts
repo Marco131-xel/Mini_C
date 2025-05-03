@@ -27,18 +27,15 @@ export default class Print extends Instruccion {
                 arbol.Print(val.toString());
             }
         } else if (valor instanceof Map) {
+            // convertir map a string para structs
             let structStr = "{ ";
             for (const [key, val] of valor.entries()) {
-                if (val instanceof Nativo) {
-                    structStr += `${key}: ${val.getValor()}, `;
-                } else {
-                    structStr += `${key}: ${val}, `;
-                }
+                structStr += `${key}: ${val.getValor?.() ?? val}, `;
             }
             structStr = structStr.trim().replace(/,$/, "") + " }";
             arbol.Print(structStr);
         } else {
-            arbol.Print(valor.toString());
+            arbol.Print(valor?.toString() ?? "[Valor no convertible]");
         }
     
         return null;
@@ -53,9 +50,31 @@ export default class Print extends Instruccion {
 function procesarVariables(contenido: string, tabla: TablaSimbolos): string {
     const regex = /\$\{([^}]+)\}/g;
 
-    return contenido.replace(regex, (_, variableNombre) => {
-        const simbolo = tabla.getVariable(variableNombre.trim());
+    return contenido.replace(regex, (_, expresion) => {
+        if (expresion.includes('.')) {
+            const [variable, propiedad] = expresion.split('.');
+            const simbolo = tabla.getVariable(variable.trim());
+            
+            if (!simbolo) return `[Variable ${variable} no definida]`;
+            
+            const valor = simbolo.getValor();
+            if (!(valor instanceof Map)) return `[${variable} no es un struct]`;
+            
+            const propValor = valor.get(propiedad.trim());
+            return propValor?.getValor?.()?.toString() ?? `[Propiedad ${propiedad} no existe]`;
+        }
+        
+        const simbolo = tabla.getVariable(expresion.trim());
         const valor = simbolo?.getValor?.() ?? "[Variable no definida]";
+        
+        if (valor instanceof Map) {
+            let structStr = "{ ";
+            for (const [key, val] of valor.entries()) {
+                structStr += `${key}: ${val.getValor?.() ?? val}, `;
+            }
+            return structStr.trim().replace(/,$/, "") + " }";
+        }
+        
         return valor?.toString?.() ?? valor;
     });
 }
