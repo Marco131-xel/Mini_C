@@ -77,7 +77,36 @@ export default class Declaracion extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoDeclaracion = `n${contador.get()}`;
+        const nodoTipo = `n${contador.get()}`;
+        const nodoId = `n${contador.get()}`;
+        const nodoIgual = `n${contador.get()}`;
+        const nodoExpresion = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoDeclaracion}[label="DECLARACION"];\n`;
+        resultado += `${nodoTipo}[label="${TipoDato[this.tipoDato.getTipo()]}"];\n`;
+        resultado += `${nodoId}[label="${this.identificador}"];\n`;
+        
+        resultado += `${anterior} -> ${nodoDeclaracion};\n`;
+        resultado += `${nodoDeclaracion} -> ${nodoTipo};\n`;
+        resultado += `${nodoDeclaracion} -> ${nodoId};\n`;
+    
+        if (this.valor) {
+            resultado += `${nodoIgual}[label="="];\n`;
+            resultado += `${nodoExpresion}[label="EXPRESION"];\n`;
+            
+            resultado += `${nodoDeclaracion} -> ${nodoIgual};\n`;
+            resultado += `${nodoDeclaracion} -> ${nodoExpresion};\n`;
+            
+            resultado += this.valor.getAst(nodoExpresion);
+        }
+    
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+        resultado += `${nodoDeclaracion} -> ${nodoPuntoComa};\n`;
+    
+        return resultado;
     }
 
 }

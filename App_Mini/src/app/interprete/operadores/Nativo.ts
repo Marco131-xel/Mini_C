@@ -22,8 +22,27 @@ export default class Nativo extends Instruccion {
         return this.tipoDato
     }
     getAst(anterior: string): string {
-        return ""
-    }
+        const contador = Contador.getInstancia();
+        const nodoNativo = `n${contador.get()}`;
+        const nodoValor = `n${contador.get()}`;
+        
+        let valorStr = "";
+    
+        if (this.valor instanceof Map) {
+            valorStr = "STRUCT";
+        } else if (typeof this.valor === "string") {
+            valorStr = `"${this.valor}"`;
+        } else {
+            valorStr = String(this.valor);
+        }
+    
+        let resultado = `${nodoNativo}[label="NATIVO"];\n`;
+        resultado += `${nodoValor}[label=${valorStr}];\n`;
+        resultado += `${nodoNativo} -> ${nodoValor};\n`;
+        resultado += `${anterior} -> ${nodoNativo};\n`;
+        
+        return resultado;
+    }    
     
     override toString(): string {
         if (this.valor instanceof Map) {

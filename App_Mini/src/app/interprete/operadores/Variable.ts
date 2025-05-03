@@ -24,7 +24,10 @@ export default class Variable extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return "";
-    }
+        const contador = Contador.getInstancia();
+        const nombreNodo = `n${contador.get()}`;
+        return `${nombreNodo}[label="Variable: ${this.id}"];\n` +
+               `${anterior} -> ${nombreNodo};\n`;
+    }  
     
 }

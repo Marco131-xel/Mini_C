@@ -48,7 +48,27 @@ export default class Asignacion extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoAsignacion = `n${contador.get()}`;
+        const nodoId = `n${contador.get()}`;
+        const nodoIgual = `n${contador.get()}`;
+        const nodoExpresion = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoAsignacion}[label="ASIGNACION"];\n`;
+        resultado += `${nodoId}[label="${this.id}"];\n`;
+        resultado += `${nodoIgual}[label="="];\n`;
+        resultado += `${nodoExpresion}[label="EXPRESION"];\n`;
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoAsignacion};\n`;
+        resultado += `${nodoAsignacion} -> ${nodoId};\n`;
+        resultado += `${nodoAsignacion} -> ${nodoIgual};\n`;
+        resultado += `${nodoAsignacion} -> ${nodoExpresion};\n`;
+        resultado += `${nodoAsignacion} -> ${nodoPuntoComa};\n`;
+        resultado += this.exp.getAst(nodoExpresion);
+    
+        return resultado;
     }
 
 }

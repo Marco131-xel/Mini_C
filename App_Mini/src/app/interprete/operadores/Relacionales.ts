@@ -258,7 +258,43 @@ export default class Relacionales extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoRelacional = `n${contador.get()}`;
+        const nodoIzq = `n${contador.get()}`;
+        const nodoOp = `n${contador.get()}`;
+        const nodoDer = `n${contador.get()}`;
+        
+        let resultado = `${nodoRelacional}[label="EXPRESION_RELACIONAL"];\n`;
+        resultado += `${nodoIzq}[label="EXPRESION"];\n`;
+        resultado += `${nodoOp}[label="${this.getOperadorSimbolo()}"];\n`;
+        resultado += `${nodoDer}[label="EXPRESION"];\n`;
+        
+        resultado += `${anterior} -> ${nodoRelacional};\n`;
+        resultado += `${nodoRelacional} -> ${nodoIzq};\n`;
+        resultado += `${nodoRelacional} -> ${nodoOp};\n`;
+        resultado += `${nodoRelacional} -> ${nodoDer};\n`;
+    
+        if (this.cond1) {
+            resultado += this.cond1.getAst(nodoIzq);
+        }
+
+        if (this.cond2) {
+            resultado += this.cond2.getAst(nodoDer);
+        }
+    
+        return resultado;
+    }
+    
+    private getOperadorSimbolo(): string {
+        switch (this.operacion) {
+            case Operadores.EQUALS: return "==";
+            case Operadores.NOTEQUALS: return "!=";
+            case Operadores.MENORIGUAL: return "<=";
+            case Operadores.MAYORIGUAL: return ">=";
+            case Operadores.MENORQUE: return "<";
+            case Operadores.MAYORQUE: return ">";
+            default: return "?";
+        }
     }
     
 }

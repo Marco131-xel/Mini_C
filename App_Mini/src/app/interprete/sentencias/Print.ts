@@ -42,9 +42,32 @@ export default class Print extends Instruccion {
     }
     
     getAst(anterior: string): string {
-        return ""
-    }
-
+        const contador = Contador.getInstancia();
+        const nodoPrint = `n${contador.get()}`;
+        const nodoImprimir = `n${contador.get()}`;
+        const nodoParA = `n${contador.get()}`;
+        const nodoExp = `n${contador.get()}`;
+        const nodoParC = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoPrint}[label="PRINT"];\n`;
+        resultado += `${nodoImprimir}[label="print"];\n`;
+        resultado += `${nodoParA}[label="("];\n`;
+        resultado += `${nodoExp}[label="EXPRESION"];\n`;
+        resultado += `${nodoParC}[label=")"];\n`;
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoPrint};\n`;
+        resultado += `${nodoPrint} -> ${nodoImprimir};\n`;
+        resultado += `${nodoPrint} -> ${nodoParA};\n`;
+        resultado += `${nodoPrint} -> ${nodoExp};\n`;
+        resultado += `${nodoPrint} -> ${nodoParC};\n`;
+        resultado += `${nodoPrint} -> ${nodoPuntoComa};\n`;
+    
+        resultado += this.expresion.getAst(nodoExp);
+    
+        return resultado;
+    }    
 }
 
 function procesarVariables(contenido: string, tabla: TablaSimbolos): string {

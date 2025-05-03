@@ -12,6 +12,7 @@
     "src/**/*.d.ts",
     "src/app/interprete/operadores/**/*.ts",
     "src/app/interprete/funciones/**/*.ts",
-    "src/app/interprete/sentencias/**/*.ts"
+    "src/app/interprete/sentencias/**/*.ts",
+    "src/app/interprete/import/**/*.ts"
   ]
 }

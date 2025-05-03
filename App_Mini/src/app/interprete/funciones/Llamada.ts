@@ -6,6 +6,7 @@ import Return from "../sentencias/Return"
 import Tipo, { TipoDato } from "../ast/Tipo"
 import Simbolo from "../ast/Simbolo";
 import SimFuncion from "./SimFuncion";
+import Contador from "../ast/Contador";
 
 export default class LLamada extends Instruccion {
     
@@ -95,7 +96,33 @@ export default class LLamada extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoLlamada = `n${contador.get()}`;
+        const nodoId = `n${contador.get()}`;
+        const nodoApertura = `n${contador.get()}`;
+        const nodoArgs = `n${contador.get()}`;
+        const nodoCierre = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoLlamada}[label="LLAMADA_FUNCION"];\n`;
+        resultado += `${nodoId}[label="${this.id}"];\n`;
+        resultado += `${nodoApertura}[label="("];\n`;
+        resultado += `${nodoArgs}[label="ARGUMENTOS"];\n`;
+        resultado += `${nodoCierre}[label=")"];\n`;
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoLlamada};\n`;
+        resultado += `${nodoLlamada} -> ${nodoId};\n`;
+        resultado += `${nodoLlamada} -> ${nodoApertura};\n`;
+        resultado += `${nodoLlamada} -> ${nodoArgs};\n`;
+        resultado += `${nodoLlamada} -> ${nodoCierre};\n`;
+        resultado += `${nodoLlamada} -> ${nodoPuntoComa};\n`;
+    
+        // agregar argumentos
+        for (const arg of this.argumentos) {
+            resultado += arg.getAst(nodoArgs);
+        }
+        return resultado;
     }
     
 }

@@ -20,9 +20,13 @@
   const For = require('../sentencias/For.ts')
   const Function = require('../funciones/Function.ts')
   const Llamada = require('../funciones/Llamada.ts')
+  const Imports = require('../import/Imports.ts')
 }
 
-inicio = instrs:instrucciones EOF { return instrs; }
+inicio = importar? _ "void" _ "main" _ "(" _ ")" _ "{" _ instrs:instrucciones _ "}" { return instrs; }
+;
+
+importar = "#" "import" _ mod:IDENTIFICADOR "." arch:IDENTIFICADOR ";" { console.log("Importando: ", mod, arch) }
 ;
 
 instrucciones = inst:instruccion insts:(_ instruccion)* { return [inst, ...insts.map(t => t[1])]; }

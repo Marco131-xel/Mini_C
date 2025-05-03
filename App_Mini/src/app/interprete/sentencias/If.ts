@@ -1,5 +1,6 @@
 import { Instruccion } from "../abstracto/Instruccion"
 import Arbol from "../ast/Arbol"
+import Contador from "../ast/Contador"
 import TablaSimbolos from "../ast/TablaSimbolos"
 import Tipo, { TipoDato } from "../ast/Tipo"
 import Errores from "../excepciones/Errores"
@@ -73,6 +74,50 @@ export default class If extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoIf = `n${contador.get()}`;
+        const nodoIfLabel = `n${contador.get()}`;
+        const nodoCondicion = `n${contador.get()}`;
+        const nodoBloqueIf = `n${contador.get()}`;
+        const nodoElse = `n${contador.get()}`;
+        const nodoBloqueElse = `n${contador.get()}`;
+    
+        let resultado = `${nodoIf}[label="IF"];\n`;
+        resultado += `${nodoIfLabel}[label="if"];\n`;
+        resultado += `${nodoCondicion}[label="CONDICION"];\n`;
+        resultado += `${nodoBloqueIf}[label="BLOQUE_IF"];\n`;
+        
+        resultado += `${anterior} -> ${nodoIf};\n`;
+        resultado += `${nodoIf} -> ${nodoIfLabel};\n`;
+        resultado += `${nodoIf} -> ${nodoCondicion};\n`;
+        resultado += `${nodoIf} -> ${nodoBloqueIf};\n`;
+    
+        // AST de la condición
+        resultado += this.condicion.getAst(nodoCondicion);
+    
+        // AST de las instrucciones del if
+        for (const instr of this.instruccionesIf) {
+            resultado += instr.getAst(nodoBloqueIf);
+        }
+    
+        // Manejo de else if y else
+        if (this.elseIf) {
+            const nodoElseIf = `n${contador.get()}`;
+            resultado += `${nodoElseIf}[label="ELSE_IF"];\n`;
+            resultado += `${nodoIf} -> ${nodoElseIf};\n`;
+            resultado += this.elseIf.getAst(nodoElseIf);
+        } else if (this.instruccionesElse.length > 0) {
+            resultado += `${nodoElse}[label="else"];\n`;
+            resultado += `${nodoBloqueElse}[label="BLOQUE_ELSE"];\n`;
+            resultado += `${nodoIf} -> ${nodoElse};\n`;
+            resultado += `${nodoIf} -> ${nodoBloqueElse};\n`;
+    
+            // AST de las instrucciones del else
+            for (const instr of this.instruccionesElse) {
+                resultado += instr.getAst(nodoBloqueElse);
+            }
+        }
+    
+        return resultado;
     }
 }

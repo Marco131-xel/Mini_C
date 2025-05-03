@@ -35,7 +35,30 @@ export default class Return extends Instruccion {
         return this.valor
     }
 
-     getAst(anterior: string): string {
-        return ""
+    getAst(anterior: string): string {
+        const contador = Contador.getInstancia();
+        const nodoReturn = `n${contador.get()}`;
+        const nodoKw = `n${contador.get()}`;
+        const nodoExp = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoReturn}[label="RETURN"];\n`;
+        resultado += `${nodoKw}[label="return"];\n`;
+        
+        if (this.expresion) {
+            resultado += `${nodoExp}[label="EXPRESION"];\n`;
+            resultado += this.expresion.getAst(nodoExp);
+        } else {
+            resultado += `${nodoExp}[label=""];\n`;
+        }
+        
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoReturn};\n`;
+        resultado += `${nodoReturn} -> ${nodoKw};\n`;
+        resultado += `${nodoReturn} -> ${nodoExp};\n`;
+        resultado += `${nodoReturn} -> ${nodoPuntoComa};\n`;
+    
+        return resultado;
     }
 }

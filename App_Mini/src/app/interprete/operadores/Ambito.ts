@@ -1,9 +1,8 @@
 import { Instruccion } from "../abstracto/Instruccion"
 import Arbol from "../ast/Arbol"
-import Simbolo from "../ast/Simbolo"
+import Contador from "../ast/Contador"
 import TablaSimbolos from "../ast/TablaSimbolos"
 import Tipo, { TipoDato } from "../ast/Tipo"
-import Errores from "../excepciones/Errores"
 
 export default class Ambito extends Instruccion {
   
@@ -24,7 +23,27 @@ export default class Ambito extends Instruccion {
   }
 
   getAst(anterior: string): string {
-    return ""
+    const contador = Contador.getInstancia();
+    const nodoAmbito = `n${contador.get()}`;
+    const nodoInicio = `n${contador.get()}`;
+    const nodoInstrucciones = `n${contador.get()}`;
+    const nodoFin = `n${contador.get()}`;
+
+    let resultado = `${nodoAmbito}[label="AMBITO"];\n`;
+    resultado += `${nodoInicio}[label="{"];\n`;
+    resultado += `${nodoInstrucciones}[label="INSTRUCCIONES"];\n`;
+    resultado += `${nodoFin}[label="}"];\n`;
+    
+    resultado += `${anterior} -> ${nodoAmbito};\n`;
+    resultado += `${nodoAmbito} -> ${nodoInicio};\n`;
+    resultado += `${nodoAmbito} -> ${nodoInstrucciones};\n`;
+    resultado += `${nodoAmbito} -> ${nodoFin};\n`;
+    
+    for (const instruccion of this.instrucciones) {
+        resultado += instruccion.getAst(nodoInstrucciones);
+    }
+
+    return resultado;
   }
 
 }

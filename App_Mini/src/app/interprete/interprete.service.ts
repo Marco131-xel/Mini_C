@@ -10,7 +10,7 @@ export class InterpreteService {
   
   private interpretar = new Interpretar();
 
-  ejecutarCodigo(codigo: string): { salida: string; errores: Errores[]; tablaSimbolos: TablaSimbolos } {
+  ejecutarCodigo(codigo: string): { salida: string; errores: Errores[]; tablaSimbolos: TablaSimbolos; astDot: string } {
     return this.interpretar.ejecutar(codigo);
-  }
+  }  
 }

@@ -1,5 +1,6 @@
 import { Instruccion } from "../abstracto/Instruccion"
 import Arbol from "../ast/Arbol"
+import Contador from "../ast/Contador"
 import Simbolo from "../ast/Simbolo"
 import TablaSimbolos from "../ast/TablaSimbolos"
 import Tipo, { TipoDato } from "../ast/Tipo"
@@ -27,7 +28,47 @@ export default class Structs extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoStruct = `n${contador.get()}`;
+        const nodoStructKw = `n${contador.get()}`;
+        const nodoId = `n${contador.get()}`;
+        const nodoApertura = `n${contador.get()}`;
+        const nodoAtributos = `n${contador.get()}`;
+        const nodoCierre = `n${contador.get()}`;
+    
+        let resultado = `${nodoStruct}[label="DEF_STRUCT"];\n`;
+        resultado += `${nodoStructKw}[label="struct"];\n`;
+        resultado += `${nodoId}[label="${this.nombre}"];\n`;
+        resultado += `${nodoApertura}[label="{"];\n`;
+        resultado += `${nodoAtributos}[label="ATRIBUTOS"];\n`;
+        resultado += `${nodoCierre}[label="}"];\n`;
+    
+        resultado += `${anterior} -> ${nodoStruct};\n`;
+        resultado += `${nodoStruct} -> ${nodoStructKw};\n`;
+        resultado += `${nodoStruct} -> ${nodoId};\n`;
+        resultado += `${nodoStruct} -> ${nodoApertura};\n`;
+        resultado += `${nodoStruct} -> ${nodoAtributos};\n`;
+        resultado += `${nodoStruct} -> ${nodoCierre};\n`;
+    
+        // agregar atributos
+        for (const attr of this.atributos) {
+            const nodoAttr = `n${contador.get()}`;
+            const nodoTipo = `n${contador.get()}`;
+            const nodoAttrId = `n${contador.get()}`;
+            const nodoPuntoComa = `n${contador.get()}`;
+    
+            resultado += `${nodoAttr}[label="ATRIBUTO"];\n`;
+            resultado += `${nodoTipo}[label="${TipoDato[attr.tipo.getTipo()]}"];\n`;
+            resultado += `${nodoAttrId}[label="${attr.id}"];\n`;
+            resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+            resultado += `${nodoAtributos} -> ${nodoAttr};\n`;
+            resultado += `${nodoAttr} -> ${nodoTipo};\n`;
+            resultado += `${nodoAttr} -> ${nodoAttrId};\n`;
+            resultado += `${nodoAttr} -> ${nodoPuntoComa};\n`;
+        }
+    
+        return resultado;
     }
 }
 
@@ -101,8 +142,51 @@ export class instaStruct extends Instruccion {
         }
         return null
     }
+    
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoInst = `n${contador.get()}`;
+        const nodoStructKw = `n${contador.get()}`;
+        const nodoTipo = `n${contador.get()}`;
+        const nodoId = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoInst}[label="INST_STRUCT"];\n`;
+        resultado += `${nodoStructKw}[label="struct"];\n`;
+        resultado += `${nodoTipo}[label="${this.nombreStruct}"];\n`;
+        resultado += `${nodoId}[label="${this.id}"];\n`;
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoInst};\n`;
+        resultado += `${nodoInst} -> ${nodoStructKw};\n`;
+        resultado += `${nodoInst} -> ${nodoTipo};\n`;
+        resultado += `${nodoInst} -> ${nodoId};\n`;
+    
+        if (this.valores && this.valores.length > 0) {
+            const nodoIgual = `n${contador.get()}`;
+            const nodoApertura = `n${contador.get()}`;
+            const nodoValores = `n${contador.get()}`;
+            const nodoCierre = `n${contador.get()}`;
+    
+            resultado += `${nodoIgual}[label="="];\n`;
+            resultado += `${nodoApertura}[label="{"];\n`;
+            resultado += `${nodoValores}[label="VALORES"];\n`;
+            resultado += `${nodoCierre}[label="}"];\n`;
+    
+            resultado += `${nodoInst} -> ${nodoIgual};\n`;
+            resultado += `${nodoInst} -> ${nodoApertura};\n`;
+            resultado += `${nodoInst} -> ${nodoValores};\n`;
+            resultado += `${nodoInst} -> ${nodoCierre};\n`;
+    
+            // agregar valores
+            for (const valor of this.valores) {
+                resultado += valor.getAst(nodoValores);
+            }
+        }
+    
+        resultado += `${nodoInst} -> ${nodoPuntoComa};\n`;
+    
+        return resultado;
     }
 }
 
@@ -138,7 +222,26 @@ export class acceStruct extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoAcceso = `n${contador.get()}`;
+        const nodoVar = `n${contador.get()}`;
+        const nodoPunto = `n${contador.get()}`;
+        const nodoAttr = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoAcceso}[label="ACCESO_STRUCT"];\n`;
+        resultado += `${nodoVar}[label="${this.idStruct}"];\n`;
+        resultado += `${nodoPunto}[label="."];\n`;
+        resultado += `${nodoAttr}[label="${this.atributo}"];\n`;
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoAcceso};\n`;
+        resultado += `${nodoAcceso} -> ${nodoVar};\n`;
+        resultado += `${nodoAcceso} -> ${nodoPunto};\n`;
+        resultado += `${nodoAcceso} -> ${nodoAttr};\n`;
+        resultado += `${nodoAcceso} -> ${nodoPuntoComa};\n`;
+    
+        return resultado;
     }
 
 }
@@ -180,7 +283,34 @@ export class AsigStruct extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoAsig = `n${contador.get()}`;
+        const nodoVar = `n${contador.get()}`;
+        const nodoPunto = `n${contador.get()}`;
+        const nodoAttr = `n${contador.get()}`;
+        const nodoIgual = `n${contador.get()}`;
+        const nodoExpr = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoAsig}[label="ASIGNACION_STRUCT"];\n`;
+        resultado += `${nodoVar}[label="${this.idStruct}"];\n`;
+        resultado += `${nodoPunto}[label="."];\n`;
+        resultado += `${nodoAttr}[label="${this.atributp}"];\n`;
+        resultado += `${nodoIgual}[label="="];\n`;
+        resultado += `${nodoExpr}[label="EXPRESION"];\n`;
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoAsig};\n`;
+        resultado += `${nodoAsig} -> ${nodoVar};\n`;
+        resultado += `${nodoAsig} -> ${nodoPunto};\n`;
+        resultado += `${nodoAsig} -> ${nodoAttr};\n`;
+        resultado += `${nodoAsig} -> ${nodoIgual};\n`;
+        resultado += `${nodoAsig} -> ${nodoExpr};\n`;
+        resultado += `${nodoAsig} -> ${nodoPuntoComa};\n`;
+    
+        resultado += this.expresion.getAst(nodoExpr);
+    
+        return resultado;
     }
     
 }

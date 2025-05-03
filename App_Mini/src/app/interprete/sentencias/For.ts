@@ -1,5 +1,6 @@
 import { Instruccion } from "../abstracto/Instruccion"
 import Arbol from "../ast/Arbol"
+import Contador from "../ast/Contador"
 import TablaSimbolos from "../ast/TablaSimbolos"
 import Tipo, { TipoDato } from "../ast/Tipo"
 import Errores from "../excepciones/Errores"
@@ -69,7 +70,37 @@ export default class For extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoFor = `n${contador.get()}`;
+        const nodoForLabel = `n${contador.get()}`;
+        const nodoAsignacion = `n${contador.get()}`;
+        const nodoCondicion = `n${contador.get()}`;
+        const nodoActualizar = `n${contador.get()}`;
+        const nodoBloque = `n${contador.get()}`;
+    
+        let resultado = `${nodoFor}[label="FOR"];\n`;
+        resultado += `${nodoForLabel}[label="for"];\n`;
+        resultado += `${nodoAsignacion}[label="ASIGNACION_INICIAL"];\n`;
+        resultado += `${nodoCondicion}[label="CONDICION"];\n`;
+        resultado += `${nodoActualizar}[label="ACTUALIZACION"];\n`;
+        resultado += `${nodoBloque}[label="BLOQUE_INSTRUCCIONES"];\n`;
+    
+        resultado += `${anterior} -> ${nodoFor};\n`;
+        resultado += `${nodoFor} -> ${nodoForLabel};\n`;
+        resultado += `${nodoFor} -> ${nodoAsignacion};\n`;
+        resultado += `${nodoFor} -> ${nodoCondicion};\n`;
+        resultado += `${nodoFor} -> ${nodoActualizar};\n`;
+        resultado += `${nodoFor} -> ${nodoBloque};\n`;
+    
+        resultado += this.asignacion.getAst(nodoAsignacion);
+        resultado += this.condicion.getAst(nodoCondicion);
+        resultado += this.actualizar.getAst(nodoActualizar);
+        
+        for (const instr of this.instrucciones) {
+            resultado += instr.getAst(nodoBloque);
+        }
+    
+        return resultado;
     }
 
 }

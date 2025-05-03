@@ -32,7 +32,23 @@ export default class Decremento extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoDecremento = `n${contador.get()}`;
+        const nodoId = `n${contador.get()}`;
+        const nodoOperador = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoDecremento}[label="DECREMENTO"];\n`;
+        resultado += `${nodoId}[label="${this.id}"];\n`;
+        resultado += `${nodoOperador}[label="--"];\n`;
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoDecremento};\n`;
+        resultado += `${nodoDecremento} -> ${nodoId};\n`;
+        resultado += `${nodoDecremento} -> ${nodoOperador};\n`;
+        resultado += `${nodoDecremento} -> ${nodoPuntoComa};\n`;
+    
+        return resultado;
     }
     
 }

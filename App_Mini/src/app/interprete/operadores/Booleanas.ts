@@ -72,7 +72,53 @@ export default class Booleanas extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoBooleana = `n${contador.get()}`;
+        
+        let resultado = `${nodoBooleana}[label="EXPRESION_BOOLEANA"];\n`;
+        resultado += `${anterior} -> ${nodoBooleana};\n`;
+    
+        // Para operadores binarios (AND, OR)
+        if (this.operacion === Operadores.AND || this.operacion === Operadores.OR) {
+            const nodoOp = `n${contador.get()}`;
+            const nodoExpr1 = `n${contador.get()}`;
+            const nodoExpr2 = `n${contador.get()}`;
+            
+            resultado += `${nodoOp}[label="${this.getOperadorSimbolo()}"];\n`;
+            resultado += `${nodoExpr1}[label="EXPRESION"];\n`;
+            resultado += `${nodoExpr2}[label="EXPRESION"];\n`;
+            
+            resultado += `${nodoBooleana} -> ${nodoOp};\n`;
+            resultado += `${nodoBooleana} -> ${nodoExpr1};\n`;
+            resultado += `${nodoBooleana} -> ${nodoExpr2};\n`;
+    
+            if (this.log1) resultado += this.log1.getAst(nodoExpr1);
+            if (this.log2) resultado += this.log2.getAst(nodoExpr2);
+        } 
+        // Para operador unario (NOT)
+        else if (this.operacion === Operadores.NOT && this.log) {
+            const nodoOp = `n${contador.get()}`;
+            const nodoExpr = `n${contador.get()}`;
+            
+            resultado += `${nodoOp}[label="${this.getOperadorSimbolo()}"];\n`;
+            resultado += `${nodoExpr}[label="EXPRESION"];\n`;
+            
+            resultado += `${nodoBooleana} -> ${nodoOp};\n`;
+            resultado += `${nodoBooleana} -> ${nodoExpr};\n`;
+            
+            resultado += this.log.getAst(nodoExpr);
+        }
+    
+        return resultado;
+    }
+    
+    private getOperadorSimbolo(): string {
+        switch (this.operacion) {
+            case Operadores.AND: return "&&";
+            case Operadores.OR: return "||";
+            case Operadores.NOT: return "!";
+            default: return "?";
+        }
     }
 
 }

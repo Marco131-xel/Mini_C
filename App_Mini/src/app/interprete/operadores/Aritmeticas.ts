@@ -240,9 +240,45 @@ export default class Aritmeticas extends Instruccion {
     
     // Crear el AST
     getAst(anterior: string): string {
-        return ""
-    }
+        const contador = Contador.getInstancia();
+        let resultado = "";
     
+        if (this.operacion === Operadores.NEGACION) {
+            const nodoNeg = `n${contador.get()}`;
+            const nodoExp = `n${contador.get()}`;
+            resultado += `${nodoNeg}[label="-"];\n`;
+            resultado += `${nodoExp}[label="EXPRESION"];\n`;
+            resultado += `${anterior} -> ${nodoNeg};\n`;
+            resultado += `${anterior} -> ${nodoExp};\n`;
+            resultado += this.operandoUnico?.getAst(nodoExp);
+            return resultado;
+        }
+    
+        const nodoIzq = `n${contador.get()}`;
+        const nodoOp = `n${contador.get()}`;
+        const nodoDer = `n${contador.get()}`;
+    
+        resultado += `${nodoIzq}[label="EXPRESION"];\n`;
+        resultado += `${nodoOp}[label="${this.getOperadorSimbolo()}"];\n`;
+        resultado += `${nodoDer}[label="EXPRESION"];\n`;
+        resultado += `${anterior} -> ${nodoIzq};\n`;
+        resultado += `${anterior} -> ${nodoOp};\n`;
+        resultado += `${anterior} -> ${nodoDer};\n`;
+        resultado += this.operando1?.getAst(nodoIzq);
+        resultado += this.operando2?.getAst(nodoDer);
+        return resultado;
+    }
+
+    private getOperadorSimbolo(): string {
+        switch (this.operacion) {
+            case Operadores.SUMA: return "+";
+            case Operadores.RESTA: return "-";
+            case Operadores.MULTIPLICACION: return "*";
+            case Operadores.DIVISION: return "/";
+            case Operadores.POTENCIA: return "^";
+            default: return "?";
+        }
+    }
 }
 
 export enum Operadores {

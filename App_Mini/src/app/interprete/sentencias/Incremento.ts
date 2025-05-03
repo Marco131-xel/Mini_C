@@ -32,7 +32,23 @@ export default class Incremento extends Instruccion {
     }
 
     getAst(anterior: string): string {
-        return ""
+        const contador = Contador.getInstancia();
+        const nodoIncremento = `n${contador.get()}`;
+        const nodoId = `n${contador.get()}`;
+        const nodoOperador = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoIncremento}[label="INCREMENTO"];\n`;
+        resultado += `${nodoId}[label="${this.id}"];\n`;
+        resultado += `${nodoOperador}[label="++"];\n`;
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoIncremento};\n`;
+        resultado += `${nodoIncremento} -> ${nodoId};\n`;
+        resultado += `${nodoIncremento} -> ${nodoOperador};\n`;
+        resultado += `${nodoIncremento} -> ${nodoPuntoComa};\n`;
+    
+        return resultado;
     }
     
 }

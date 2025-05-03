@@ -155,7 +155,8 @@ export class IdeComponent {
   
         console.log("Salida:", resultado.salida);
         console.log("Errores:", resultado.errores);
-
+        //console.log("DOT del AST:\n", resultado.astDot);
+        this.saveDotFile(resultado.astDot);
         this.showingTerminal = true;
         this.actualizarTablaSimbolos(resultado.tablaSimbolos)
 
@@ -175,6 +176,11 @@ export class IdeComponent {
       this.showingTerminal = true;
       this.showTab('salida');
     }
+  }
+
+  saveDotFile(dotContent: string): void {
+    const filename = 'ast.dot';
+    this.downloadFile(filename, dotContent);
   }
 
   // funcion para crear proyecto

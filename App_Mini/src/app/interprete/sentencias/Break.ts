@@ -15,7 +15,20 @@ export default class Break extends Instruccion {
         return null
     }
 
-     getAst(anterior: string): string {
-        return ""
+    getAst(anterior: string): string {
+        const contador = Contador.getInstancia();
+        const nodoBreak = `n${contador.get()}`;
+        const nodoBreakLabel = `n${contador.get()}`;
+        const nodoPuntoComa = `n${contador.get()}`;
+    
+        let resultado = `${nodoBreak}[label="BREAK"];\n`;
+        resultado += `${nodoBreakLabel}[label="break"];\n`;
+        resultado += `${nodoPuntoComa}[label=";"];\n`;
+    
+        resultado += `${anterior} -> ${nodoBreak};\n`;
+        resultado += `${nodoBreak} -> ${nodoBreakLabel};\n`;
+        resultado += `${nodoBreak} -> ${nodoPuntoComa};\n`;
+    
+        return resultado;
     }
 }
