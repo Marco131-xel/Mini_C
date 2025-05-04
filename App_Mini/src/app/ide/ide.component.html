@@ -5,8 +5,6 @@
   <button (click)="createProyect()">Crear</button>
   <button (click)="saveCode()">Guardar</button>
   <button (click)="toggleTerminal()">Terminal</button>
-  <button (click)="showYaml()">Yaml</button>
-  <button (click)="showReports()">Reportes</button>
   <button (click)="showHelp()">Ayuda</button>
   <button (click)="compileCode()">Compilar</button>
   <div class="cursor-info">
@@ -121,9 +119,19 @@
   </div>
 </div>
 <!-- VISOR DE IMAGEN -->
-<div class="image-preview-container" *ngIf="showImagePreview">
-  <img [src]="imagePreview" alt="Preview" class="image-preview">
-  <div class="image-info" *ngIf="archivoSeleccionado">
-      {{ archivoSeleccionado.nombre }}
+<div class="modal" *ngIf="showImagePreview">
+  <div class="modal-content">
+    <span class="close" (click)="cerrarImagen()">&times;</span>
+    <div class="zoom-container"
+         (mousedown)="startDragging($event)"
+         (mousemove)="onDragging($event)"
+         (mouseup)="stopDragging()"
+         (mouseleave)="stopDragging()"
+         (wheel)="onZoom($event)">
+      <img [src]="imagePreview" alt="Preview" class="zoom-image"
+           [style.transform]="'scale(' + zoom + ') translate(' + translateX + 'px, ' + translateY + 'px)'">
+    </div>
+    <div class="image-info">{{ archivoSeleccionado?.nombre }}</div>
   </div>
+  
 </div>

@@ -83,11 +83,33 @@ export class IdeComponent {
   }
   
   // funcion para guardar archivos
-  saveCode(): void {
-    if(this.selectedFile){
-      this.downloadFile(this.selectedFile.name, this.codeContent);
-    } else {
-      console.log('No hay archivo cargado,"use Guarda como" en su lugar')
+  async saveCode() {
+    try {
+      if (!this.archivoSeleccionado && !this.selectedFile) {
+        alert('No hay un archivo seleccionado para guardar');
+        return;
+      }
+      let fileHandle: FileSystemFileHandle | null = null;
+      if (this.archivoSeleccionado) {
+        fileHandle = this.archivoSeleccionado.handle as FileSystemFileHandle;
+      }
+      else if (this.selectedFile) {
+        alert('Para guardar cambios, por favor usa la función de "Guardar como" o trabaja dentro de un proyecto');
+        return;
+      }
+  
+      if (fileHandle) {
+        // Crear un FileSystemWritableFileStream para escribir
+        const writable = await fileHandle.createWritable();
+        await writable.write(this.codeContent);
+        await writable.close();
+        
+        console.log('Archivo guardado exitosamente');
+        alert('Cambios guardados exitosamente');
+      }
+    } catch (err) {
+      console.error('Error al guardar el archivo:', err);
+      alert('Error al guardar el archivo: ' + err);
     }
   }
   
@@ -170,13 +192,13 @@ export class IdeComponent {
           this.showTab('salida');
         }
       } catch (e) {
-        this.terminalOutput = "Error al ejecutar el código";
+        this.terminalOutput = "Error al ejecutar el codigo";
         this.showingTerminal = true;
         this.showTab('salida');
         console.error(e);
       }
     } else {
-      this.terminalOutput = "No hay código para ejecutar";
+      this.terminalOutput = "No hay codigo para ejecutar";
       this.showingTerminal = true;
       this.showTab('salida');
     }
@@ -594,25 +616,72 @@ export class IdeComponent {
     });
   }
 
-  listCaptchas() {
-    console.log('Mostrar lista de captchas');
-    this.router.navigate(['/lista-captchas']);
-  }
-
   toggleTerminal() {
     this.showingTerminal = !this.showingTerminal;
   }
-  
-  showYaml() {
-    this.terminalOutput = 'Mostrando YAML...';
-  }
-  
-  showReports() {
-    this.terminalOutput = 'Mostrando reportes...';
-  }
-  
+
   showHelp() {
-    this.terminalOutput = 'Ayuda del sistema...';
+    this.currentTab = 'salida';
+    this.terminalOutput = `
+  ==== AYUDA DEL SISTEMA ====
+  
+  🎯 Funciones principales:
+  - 📂 Abrir: Carga un proyecto desde tu sistema de archivos.
+  - 📁 Crear: Crea un nuevo proyecto con estructura de carpetas y archivos.
+  - 💾 Guardar: Guarda el contenido actual del editor.
+  - 🧪 Compilar: Ejecuta el compilador e interpreta el codigo Mini C.
+  - 🖥️ Terminal: Muestra la salida del compilador, errores y tabla de simbolos.
+  - 🛠️ Yaml: Visualiza el archivo config.yml del proyecto.
+  - 📊 Reportes: Muestra reportes generados (como AST en formato PNG).
+  - ❓ Ayuda: Muestra esta guía.
+  
+  📝 Editor:
+  - Escribe tu codigo en el area central.
+  - La linea y columna del cursor se muestran arriba a la derecha.
+  
+  📈 Imágenes PNG:
+  - Al hacer clic sobre un archivo .png se abre una vista ampliada.
+  - Puedes hacer zoom con la rueda del mouse.
+  - Puedes arrastrar la imagen manteniendo clic izquierdo.
+  
+  ¡Gracias por usar Mini C!
+  `;
+  }
+  
+
+  cerrarImagen() {
+    this.showImagePreview = false;
+  }
+
+  zoom = 1;
+  translateX = 0;
+  translateY = 0;
+  dragging = false;
+  lastX = 0;
+  lastY = 0;
+  
+  onZoom(event: WheelEvent) {
+    event.preventDefault();
+    const delta = event.deltaY > 0 ? -0.1 : 0.1;
+    this.zoom = Math.min(Math.max(this.zoom + delta, 0.1), 5);
+  }
+  
+  startDragging(event: MouseEvent) {
+    this.dragging = true;
+    this.lastX = event.clientX;
+    this.lastY = event.clientY;
+  }
+  
+  onDragging(event: MouseEvent) {
+    if (!this.dragging) return;
+    this.translateX += event.clientX - this.lastX;
+    this.translateY += event.clientY - this.lastY;
+    this.lastX = event.clientX;
+    this.lastY = event.clientY;
+  }
+  
+  stopDragging() {
+    this.dragging = false;
   }
 
   showTab(tab: string) {
