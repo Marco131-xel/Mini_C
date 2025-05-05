@@ -200,6 +200,7 @@ textarea {
   box-sizing: border-box;
   outline: none;
   border-left: 1px solid #2d2d2d;
+  overflow: hidden !important;
 }
 
 textarea:focus {
