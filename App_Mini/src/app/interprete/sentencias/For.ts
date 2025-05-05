@@ -59,6 +59,10 @@ export default class For extends Instruccion {
                 if (resIns instanceof Return) {
                     return resIns
                 }
+
+                if (resIns instanceof Errores) {
+                    return resIns
+                }
             }
             // ejecutar la actualizacion
             const act = this.actualizar.interpretar(arbol, newTabla)
